@@ -154,10 +154,10 @@ drug_targets|drug targets
 positive_targets|positive
 negative_targets|negative
 other_targets|other & unknown
-rhodop_gpcr|Rhodopsin-like GPCRs
-ion_channels|Ion channels
-nuclear_receptors|Nuclear receptors
-enzymes|Enzymes
+rhodop_gpcr|rhodopsin-like GPCRs
+ion_channels|ion channels
+nuclear_receptors|nuclear receptors
+enzymes|enzymes
 gwascatalog|GWAS hits
 "),sep='|',header=TRUE)
 
@@ -233,7 +233,7 @@ par(mar=c(4,18,3,3))
 plot(NA,NA, xlim=c(0,1), ylim=expand.range(range(lof_oe$y),by=.75), axes=FALSE, xlab='', ylab='')
 abline(v=lof_oe$mean[lof_oe$filename=='universe'], lty=3, col='#333333', lwd=2)
 par(xpd=T) # allow 95%CI to extend beyond xlims of [0,1]
-segments(x0=lof_oe$lower95, x1=lof_oe$upper95, y0=lof_oe$y, col=lof_oe$color, lwd=5)
+segments(x0=lof_oe$lower95, x1=lof_oe$upper95, y0=lof_oe$y, col=lof_oe$color, lwd=3)
 par(xpd=F)
 points(x=lof_oe$mean, y=lof_oe$y, col=lof_oe$color, pch=19, cex=1.5)
 axis(side=1, at=(0:4)/4, labels=percent((0:4)/4), lwd=0, lwd.ticks=1)
@@ -402,7 +402,7 @@ ylims = expand.range(range(forest2$y),by=.75)
 # panel A - forest plot
 plot(NA,NA, xlim=c(0,1), ylim=ylims, axes=FALSE, xlab='', ylab='')
 abline(v=forest2$mean[forest2$filename=='universe'], lty=3, col='#333333', lwd=2)
-segments(x0=forest2$lower95, x1=forest2$upper95, y0=forest2$y, col=forest2$color, lwd=5)
+segments(x0=forest2$lower95, x1=forest2$upper95, y0=forest2$y, col=forest2$color, lwd=3)
 points(x=forest2$mean, y=forest2$y, col=forest2$color, pch=19, cex=1.5)
 empty_circle_color = forest2$color[forest2$filename=='drug_targets']
 points(x=forest2$drug_mean[3:6], y=forest2$y[3:6], col=empty_circle_color, pch=1, lwd=2, cex=1.5)
