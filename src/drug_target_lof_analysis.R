@@ -119,7 +119,7 @@ abline(m, col=k_syn, lwd=1)
 axis(side=1,at=(0:2)*500)
 axis(side=2,at=(0:2)*500,las=2)
 abline(a=0,b=1)
-mtext('A', side=3, cex=2.0, adj = -0.1, line = 0.3)
+mtext('a', side=3, cex=2.0, adj = -0.1, line = 0.3)
 mtext(side=3,line=1,text='synonymous',font=2,cex=1,col=k_syn)
 plot(genes$exp_mis[non_ttn], genes$obs_mis[non_ttn], xaxs='i', yaxs='i', xlim=c(0,2500), ylim=c(0,2500), pch=20, cex=0.5, col=alpha(k_mis,0.2), xlab='expected', ylab='observed', yaxt='n', xaxt='n')
 m = lm(obs_mis ~ exp_mis + 0, data=genes[non_ttn,])
@@ -127,7 +127,7 @@ abline(m, col=k_mis, lwd=1)
 axis(side=1,at=(0:3)*1000)
 axis(side=2,at=(0:3)*1000,las=2)
 abline(a=0,b=1)
-mtext('B', side=3, cex=2.0, adj = -0.1, line = 0.3)
+mtext('b', side=3, cex=2.0, adj = -0.1, line = 0.3)
 mtext(side=3,line=1,text='missense',font=2,cex=1,col=k_mis)
 plot(genes$exp_lof[non_ttn], genes$obs_lof[non_ttn], xaxs='i', yaxs='i', xlim=c(0,150), ylim=c(0,150), pch=20, cex=0.5, col=alpha(k_lof,0.2), xlab='expected', ylab='observed', yaxt='n', xaxt='n')
 m = lm(obs_lof ~ exp_lof + 0, data=genes[non_ttn,])
@@ -136,7 +136,7 @@ axis(side=1,at=(0:2)*100)
 axis(side=2,at=(0:2)*100,las=2)
 abline(a=0,b=1)
 mtext(side=3,line=1,text='pLoF',font=2,cex=1,col=k_lof)
-mtext('C', side=3, cex=2.0, adj = -0.1, line = 0.3)
+mtext('c', side=3, cex=2.0, adj = -0.1, line = 0.3)
 dev.off() ### -- End Figure 1
 
 
@@ -226,7 +226,7 @@ mtext(side=1, text='pLoF obs/exp ratio', line=2.5, font=1, cex=1)
 mtext(side=2, text='proportion of genes', line=3.0, font=1, cex=1)
 segments(x0=c(h_all_mean,h_drug_mean),y0=.10,y1=0,col=c(color_all,color_drug),lwd=2,lty=3)
 text(x=c(h_all_mean,h_drug_mean),y=c(.11,.11),pos=c(4,2),font=2,labels=paste(c('all\ngenes\n','drug\ntargets\n'),'mean =',percent(c(h_all_mean,h_drug_mean))),col=c(color_all,color_drug),cex=1.1)
-mtext('A', side=3, cex=2, adj = -0.05, line = 0.5)
+mtext('a', side=3, cex=2, adj = -0.05, line = 0.5)
 
 # Panel B: Forest plot
 par(mar=c(4,18,3,3))
@@ -247,7 +247,7 @@ par(xpd=F)
 mtext(side=2, at=-4.5, line=13, text='gene lists\nfor comparison\n', cex=0.8, font=2)
 mtext(side=2, at=-10.0, line=13, text="by drug\neffect\non target", cex=0.8, font=2)
 
-mtext('B', side=3, cex=2, adj = -0.4, line = 0.3)
+mtext('b', side=3, cex=2, adj = -0.4, line = 0.3)
 
 dev.off() ### -- End Figure 2
 
@@ -415,7 +415,7 @@ par(xpd=T)
 abline(h=forest2$y[forest2$filename=='drug_targets']+c(.5,-.5), col='#777777', lwd=.5)
 abline(h=forest2$y[forest2$filename=='enzymes']+c(-.5), col='#777777', lwd=.5)
 par(xpd=F)
-mtext('A', side=3, cex=2, adj = 0.0, line = 0.3)
+mtext('a', side=3, cex=2, adj = 0.0, line = 0.3)
 
 par(mar=c(4,2,3,1))
 
@@ -429,7 +429,7 @@ for (i in 2:6) {
 axis(side=1, at=2^(0:6), labels=NA)
 axis(side=1, at=2^(c(0,2,4,6)), labels=2^(c(0,2,4,6)), lwd=0, lwd.ticks=0)
 mtext(side=1,line=2.5,text='fold enrichment',cex=.7)
-mtext('B', side=3, cex=2, adj = 0.0, line = 0.3)
+mtext('b', side=3, cex=2, adj = 0.0, line = 0.3)
 
 par(mar=c(4,2,3,1))
 
@@ -450,7 +450,7 @@ for (i in 1:nrow(target_counts)) {
 text(x=0.5,y=100,labels='other',font=3)
 axis(side=1, at=c(-100,100))
 axis(side=2,at=(0:4)*100,las=2)
-mtext('C', side=3, cex=2, adj = 0.0, line = 0.3)
+mtext('c', side=3, cex=2, adj = 0.0, line = 0.3)
 
 dev.off() ### -- End Figure 3
 
@@ -508,7 +508,7 @@ par(xpd=T)
 legend(x=-4,y=7500,legend=c('heterozygotes','homozygotes &\ncompound hets'),text.col=c(het_k,hom_k),border=c(het_k,hom_k),fill=alpha(c(het_k,hom_k),.2),bty='n',cex=1.2)
 par(xpd=F)
 
-mtext('A', side=3, cex=2, adj = 0.0, line = 0.3)
+mtext('a', side=3, cex=2, adj = 0.0, line = 0.3)
 
 
 
@@ -542,7 +542,7 @@ text(x=log10(1/gnomad_finns),y=label_y,pos=3,labels='1\nin\ngnomAD Finns')
 par(xpd=T)
 par(xpd=F)
 
-mtext('B', side=3, cex=2, adj = 0.0, line = 0.3)
+mtext('b', side=3, cex=2, adj = 0.0, line = 0.3)
 
 
 
@@ -577,7 +577,7 @@ text(x=log10(1/gnomad_consang),y=label_y,pos=3,labels='1\nconsanguineous\nin gno
 par(xpd=T)
 par(xpd=F)
 
-mtext('C', side=3, cex=2, adj = 0.0, line = 0.3)
+mtext('c', side=3, cex=2, adj = 0.0, line = 0.3)
 
 dev.off() ### -- End Figure 4
 
@@ -713,7 +713,7 @@ par(xpd=F)
 
 mtext(side=3, line=0, text='HTT', font=3, cex=2)
 
-mtext('A', side=3, cex=2, adj = 0.0, line = 0.3)
+mtext('a', side=3, cex=2, adj = 0.0, line = 0.3)
 
 
 
@@ -820,7 +820,7 @@ par(xpd=F)
 
 mtext(side=3, line=0, text='MAPT', font=3, cex=2)
 
-mtext('B', side=3, cex=2, adj = 0.0, line = 0.3)
+mtext('b', side=3, cex=2, adj = 0.0, line = 0.3)
 
 lof$gene = 'MAPT'
 mapt_supptbl = lof[,c('gene','pos_id','allele_count','cat','flags','curated_verdict','form_other_notes')]
@@ -868,7 +868,7 @@ mtext(side=1,at=(231+253)/2,line=0.75,text='GPI\nsignal',col=cleaved_color,cex=.
 
 mtext(side=3, line=0, text='PRNP', font=3, cex=2)
 
-mtext('C', side=3, cex=2, adj = 0.0, line = 0.3)
+mtext('c', side=3, cex=2, adj = 0.0, line = 0.3)
 
 
 dev.off()
@@ -1029,7 +1029,7 @@ text(x=log10(1/gnomad),y=label_y,pos=3,labels='1\nin\ngnomAD')
 par(xpd=T)
 legend(x=-4,y=10000,legend=c('heterozygotes','homozygotes &\ncompound hets'),text.col=c(het_k,hom_k),border=c(het_k,hom_k),fill=alpha(c(het_k,hom_k),.2),bty='n',cex=1.2)
 par(xpd=F)
-mtext('A', side=3, cex=2, adj = 0.0, line = 0.3)
+mtext('a', side=3, cex=2, adj = 0.0, line = 0.3)
 
 finland_population = 5.50e6
 gnomad_finns = 12526
@@ -1057,7 +1057,7 @@ segments(x0=log10(1/gnomad_finns),y0=0,y1=label_y,lwd=0.5)
 text(x=log10(1/finland_population),y=label_y,pos=3,labels='1\nin\nFinland')
 text(x=log10(1/gnomad_finns),y=label_y,pos=3,labels='1\nin\ngnomAD Finns')
 
-mtext('B', side=3, cex=2, adj = 0.0, line = 0.3)
+mtext('b', side=3, cex=2, adj = 0.0, line = 0.3)
 
 a = 0.05766 # mean % genome autozygous in ELGH according to Hilary Martin's email 2018-12-06
 
@@ -1088,7 +1088,7 @@ segments(x0=log10(1/gnomad_consang),y0=0,y1=label_y,lwd=0.5)
 text(x=log10(1/world_consang_population),y=label_y,pos=3,labels='1\nconsanguineous\nworldwide')
 text(x=log10(1/gnomad_consang),y=label_y,pos=3,labels='1\nconsanguineous\nin gnomAD')
 
-mtext('C', side=3, cex=2, adj = 0.0, line = 0.3)
+mtext('c', side=3, cex=2, adj = 0.0, line = 0.3)
 
 dev.off()
 
