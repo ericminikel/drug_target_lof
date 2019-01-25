@@ -1,0 +1,152 @@
+gene	variant	allele_count	filter_status	LOFTEE_flags	curation_result	comments
+HTT	4-003076620-AGC-A	14	loftee	lcr		
+HTT	4-003076623-AGCAG-A	14	loftee	lcr		
+HTT	4-003076631-CAG-C	1	loftee	lcr		
+HTT	4-003076632-AGC-A	11	loftee	lcr		
+HTT	4-003076632-AGCAGCAGCAGCAGCAGCAGCAG-A	1	loftee	lcr		
+HTT	4-003076635-AGCAGCAGCAGCAGCAGCAG-A	10	loftee	lcr		
+HTT	4-003076635-AGCAGCAGCAGCAGCAGCAGCAGCAGCAACAG-A	1	loftee	lcr		
+HTT	4-003076638-AGCAGCAGCAGCAGCAGCAG-A	1	loftee	lcr		
+HTT	4-003076638-AGC-A	54	loftee	lcr		
+HTT	4-003076640-CAG-C	116	loftee	lcr		
+HTT	4-003076641-AGC-A	32	loftee	lcr		
+HTT	4-003076641-AGCAGCAGCAGCAG-A	55	loftee	lcr		
+HTT	4-003076644-AGC-A	31	loftee	lcr		
+HTT	4-003076644-AGCAGCAGCAGCAG-A	1	loftee	lcr		
+HTT	4-003076644-AGCAGCAGCAG-A	31	loftee	lcr		
+HTT	4-003076644-AGCAGCAGCAGCAGCAGCAACAG-A	110	loftee	lcr		
+HTT	4-003076646-CAG-C	2	loftee	lcr		
+HTT	4-003076647-AGC-A	161	loftee	lcr		
+HTT	4-003076647-AGCAGCAGCAGCAGCAACAG-A	3	loftee	lcr		
+HTT	4-003076647-AGCAGCAGCAG-A	6	loftee	lcr		
+HTT	4-003076649-CAG-C	8	loftee	lcr		
+HTT	4-003076650-AGC-A	2673	loftee	lcr		
+HTT	4-003076650-AGCAG-A	128	loftee	lcr		
+HTT	4-003076650-AGCAGCAG-A	26	loftee	lcr		
+HTT	4-003076650-AGCAGCAGCAGCAACAG-A	2	loftee	lcr		
+HTT	4-003076653-AGC-A	80	loftee	lcr		
+HTT	4-003076653-AG-A	1594	loftee	lcr		
+HTT	4-003076653-AGCAG-A	1078	loftee	lcr		
+HTT	4-003076654-G-GCCGC	2	loftee	lcr		
+HTT	4-003076655-CAGCAGCAACA-C	2	loftee	lcr		
+HTT	4-003076655-CAG-C	20	loftee	lcr		
+HTT	4-003076656-AG-A	84	loftee	lcr		
+HTT	4-003076656-A-ACC	2	loftee	lcr		
+HTT	4-003076656-AGCAGCAACAG-A	4	loftee	lcr		
+HTT	4-003076658-CAG-C	287	loftee	lcr		
+HTT	4-003076658-CAGCAACA-C	2	loftee	lcr		
+HTT	4-003076658-CA-C	1	loftee	lcr		
+HTT	4-003076659-AG-A	1	loftee	lcr		
+HTT	4-003076659-AGCAACAG-A	14	loftee	lcr		
+HTT	4-003076659-A-ACC	2	loftee	lcr		
+HTT	4-003076661-CAACA-C	8	loftee	lcr		
+HTT	4-003076662-AACAG-A	251	curated		not_LoF	CAG repeat artifact
+HTT	4-003076663-A-AGCAGCAGCAGCAGCAGCAG	2	loftee	lcr		
+HTT	4-003076663-A-AGCAGCAGCAGCAGCAGCAGCAGCAG	1	loftee	lcr		
+HTT	4-003076663-A-AGCAGCAGCAG	1	loftee	lcr		
+HTT	4-003076663-A-AGCAGCAGCAGCAGCAG	2	loftee	lcr		
+HTT	4-003076665-A-ACCGCC	49	loftee	lcr		
+HTT	4-003076669-GC-G	2	loftee	lcr		
+HTT	4-003076670-C-CAGCAGCAG	1	loftee	lcr		
+HTT	4-003076670-C-CAGCAGCAGCAG	1	loftee	lcr		
+HTT	4-003076672-ACC-A	79	loftee	lcr		
+HTT	4-003076680-CG-C	3	loftee	lcr		
+HTT	4-003076682-CCG-C	3	loftee	lcr		
+HTT	4-003076703-CTTCCT-C	1	curated		not_LoF	repeat region
+HTT	4-003076704-T-TCC	3	curated		likely_not_LoF	repeat region, nearby SNP
+HTT	4-003076710-AG-A	1	curated			repeat region
+HTT	4-003088708-TTGTC-T	1	true		LoF	true 4bp deletion
+HTT	4-003088729-CAT-C	1	true		LoF	true 2bp deletion
+HTT	4-003107083-G-A	1	true		LoF	essential splice acceptor lost. possible downstream rescue site is out-of-frame
+HTT	4-003117118-C-T	3	true		LoF	true stop codon
+HTT	4-003131650-G-A	1	true		LoF	true essential splice acceptor lost. 2 downstream splice rescue sites but both out of frame
+HTT	4-003133110-CA-C	1	true		LoF	true 1bp deletion
+HTT	4-003133110-CAG-C	7	true		LoF	true 2bp deletion
+HTT	4-003136141-GTC-G	1	true		LoF	true 2bp deletion
+HTT	4-003136269-T-G	1	curated		uncertain_LoF	raw reads not available. would be a true splice donor loss
+HTT	4-003138025-C-T	3	true		likely_LoF	likely stop codon, though there is an outside chance it creates a splice donor that preserves frame
+HTT	4-003156065-C-T	2	true		LoF	true stop codon
+HTT	4-003158859-G-GT	1	true		LoF	true 1bp insertion
+HTT	4-003174671-C-T	1	true		LoF	true stop codon
+HTT	4-003174707-C-T	1	true		LoF	true stop codon
+HTT	4-003176464-C-T	1	true		LoF	true stop codon
+HTT	4-003176787-C-T	1	true		LoF	true stop codon
+HTT	4-003176796-C-T	1	true		LoF	true stop codon
+HTT	4-003184144-C-T	1	true		LoF	true stop codon
+HTT	4-003189579-CAAAT-C	1	true		LoF	true 4bp deletion
+HTT	4-003205754-CAA-C	1	curated		uncertain_LoF	raw reads not available
+HTT	4-003205876-G-A	1	curated		likely_not_LoF	potential in-frame rescue site 3bp upstream
+HTT	4-003209047-A-AT	1	true		LoF	true 1bp insertion
+HTT	4-003211578-TC-T	1	curated		likely_not_LoF	1bp deletion could be avoided by using potential splice acceptor at subsequent codon
+HTT	4-003211677-G-T	1	true		likely_LoF	MNP - D-1 and  1 site are both mutated to T. appears would still be true splice disruptor though
+HTT	4-003215736-C-T	1	true		LoF	true stop codon
+HTT	4-003216836-G-A	1	curated		likely_not_LoF	potential in-frame donor rescue 6bp downstream
+HTT	4-003221937-CG-C	1	true		LoF	true 1bp deletion
+HTT	4-003222036-G-A	1	true		LoF	true essential splice donor loss
+HTT	4-003224113-G-T	1	true		LoF	true essential splice acceptor lost
+HTT	4-003225261-CA-C	1	true		LoF	true 1bp deletion
+HTT	4-003237874-A-T	1	true		LoF	true essential splice acceptor lost
+HTT	4-003240172-A-G	1	curated		uncertain_LoF	raw reads not available
+HTT	4-003240338-T-C	1	curated		likely_not_LoF	GC splice donor might still function, also alternate in-frame GT donor 9 bp upstream
+HTT	4-003241749-C-CT	1	loftee	lc_lof		
+HTT	4-003241757-C-T	1	loftee	lc_lof		
+MAPT	17-044039722-G-T	1	curated		not_LoF	rescued by alternate start codon M11
+MAPT	17-044049312-G-T	1	curated		not_LoF	non-constitutive exon
+MAPT	17-044049312-G-A	2	curated		not_LoF	non-constitutive exon
+MAPT	17-044049445-G-A	1	curated		not_LoF	not a real exon
+MAPT	17-044051838-G-A	5	loftee	lc_lof		
+MAPT	17-044051839-T-C	1	loftee	lc_lof		
+MAPT	17-044055646-TA-T	1	loftee	lof_flag		
+MAPT	17-044055647-A-T	39690	loftee	lc_lof,lof_flag		
+MAPT	17-044055710-A-AC	2	loftee	lof_flag		
+MAPT	17-044055746-G-A	1	loftee	lof_flag		
+MAPT	17-044060543-G-C	5	curated		not_LoF	non-constitutive exon
+MAPT	17-044060582-C-T	25	loftee	lof_flag		
+MAPT	17-044060652-A-AG	1	loftee	lof_flag		
+MAPT	17-044060675-C-T	5	loftee	lof_flag		
+MAPT	17-044060703-CAG-C	2	loftee	lof_flag		
+MAPT	17-044060717-C-CA	1	loftee	lof_flag		
+MAPT	17-044060724-CT-C	6	loftee	lof_flag		
+MAPT	17-044060788-AG-A	3	loftee	lof_flag		
+MAPT	17-044060842-CG-C	2	loftee	lof_flag		
+MAPT	17-044060877-A-AGGCCTCCCCAGCCCAAGATGGGC	1	loftee	lof_flag		
+MAPT	17-044060877-AGGCCTCCCCAGCCCAAGATGGGC-A	1	loftee	lof_flag		
+MAPT	17-044060917-C-CGCCAGAG	1	loftee	lof_flag		
+MAPT	17-044061006-T-TCCCA	1	loftee	lof_flag		
+MAPT	17-044061053-C-T	1	loftee	lof_flag		
+MAPT	17-044061059-GC-G	4	loftee	lof_flag		
+MAPT	17-044061065-CT-C	1	loftee	lof_flag		
+MAPT	17-044061078-TTCACGTGGAAA-T	1	loftee	lof_flag		
+MAPT	17-044061153-CAGGGGCCCCTGGAGAGGGGCCAG-C	2	loftee	lof_flag		
+MAPT	17-044061154-AGGGGCCCCTGGAGAGGGGCCAGAGGCCC-A	3	loftee	lof_flag		
+MAPT	17-044061182-CGG-C	1	loftee	lof_flag		
+MAPT	17-044061223-TC-T	3	loftee	lof_flag		
+MAPT	17-044061247-TG-T	1	loftee	lof_flag		
+MAPT	17-044067273-G-GA	1	loftee	lof_flag		
+MAPT	17-044067384-C-G	3	loftee	lof_flag		
+MAPT	17-044067395-TC-T	1	loftee	lof_flag		
+MAPT	17-044067403-C-T	26	loftee	lof_flag		
+MAPT	17-044067438-C-CA	1	loftee	lof_flag		
+MAPT	17-044071327-GCC-G	1	curated		not_LoF	non-constitutive exon
+MAPT	17-044071329-C-CGGGTA	1	curated		not_LoF	non-constitutive exon
+MAPT	17-044073963-A-ACC	1	curated		uncertain_LoF	raw reads not available
+MAPT	17-044096026-AGGACAGAGTCCAGTCGAAG-A	2	curated		not_LoF	actually in-frame. starting at K682 it becomes AAATGGT preserving frame 
+MAPT	17-044096047-TTGGGTCCCTGGACAATATCACCCACGTCCCTGGCGGAGGAAATAAAAAGGTAAAGGG-T	2	curated		not_LoF	actually in-frame. this is the same exact variant as the previous one
+PRNP	20-004679975-C-T	2				
+PRNP	20-004679987-C-T	1				
+PRNP	20-004680069-CT-C	1				
+PRNP	20-004680071-CATGGTGGTGGCTGGGGGCAGCCCCATGGTGGTGGCTGGGGACAGCCT-C	1				
+PRNP	20-004680089-C-T	1				
+PRNP	20-004680108-G-A	1				
+PRNP	20-004680162-G-A	1				
+PRNP	20-004680257-G-T	1				
+PRNP	20-004680566-CT-C	1				
+SNCA	4-090743391-C-TRUE	3	loftee	lc_lof		
+SOD1	21-033032095-GC-G	1	true		LoF	real early frameshift, no rescue
+SOD1	21-033036098-TAAAGG-T	1	true		likely_LoF	true 5bp frameshift deletion, splice site is rescued by downstream AG but resulting frame is shifted.
+SOD1	21-033036178-GA-G	4	true		LoF	
+SOD1	21-033038788-AATCCTCT-A	2	true		LoF	
+SOD1	21-033038833-T-C	1	true		LoF	
+SOD1	21-033039619-CG-C	2	true		LoF	
+SOD1	21-033039689-G-T	2	curated		not_LoF	alternative GT donor 3 bases upstream, in-frame
+SOD1	21-033039689-G-GT	2	curated		not_LoF	splice donor D 1 site G->GT insertion creates its own new splice donor

@@ -1,0 +1,56 @@
+id,variant_id,user,curation_date,form_other_notes,form_mapping_error,form_genotyping_error,form_mnp,form_essential_splice_rescue,form_minority_of_transcripts,form_weak_exon_conservation,form_verdict,form_homopolymer,form_revisit
+1,17-044039722-G-T,curator,"2018-12-04 14:36:39.954386","rescued by alternate start codon M11",0,0,0,0,0,0,not_LoF,0,0
+2,17-044049312-G-A,curator,"2018-12-04 14:40:12.472874","non-constitutive exon",0,0,0,0,0,0,not_LoF,0,0
+3,17-044049312-G-T,curator,"2018-12-04 14:41:07.778515","non-constitutive exon",0,0,0,0,0,0,not_LoF,0,0
+4,17-044049445-G-A,curator,"2018-12-04 14:42:19.555116","not a real exon",0,0,0,0,0,0,not_LoF,0,0
+5,17-044060543-G-C,curator,"2018-12-04 14:53:50.113330","non-constitutive exon",0,0,0,0,0,0,not_LoF,0,0
+6,17-044071327-GCC-G,curator,"2018-12-04 14:54:31.751043","non-constitutive exon",0,0,0,0,0,0,not_LoF,0,0
+7,17-044071329-C-CGGGTA,curator,"2018-12-04 14:56:55.348146","non-constitutive exon",0,0,0,0,0,0,not_LoF,0,0
+8,17-044073963-A-ACC,curator,"2018-12-04 14:57:47.749181","raw reads not available",0,0,0,0,0,0,uncertain_LoF,0,0
+9,17-044096026-AGGACAGAGTCCAGTCGAAG-A,curator,"2018-12-04 15:01:57.166333","actually in-frame. starting at K682 it becomes AAATGGT preserving frame ",0,0,0,0,0,0,not_LoF,0,0
+10,17-044096047-TTGGGTCCCTGGACAATATCACCCACGTCCCTGGCGGAGGAAATAAAAAGGTAAAGGG-T,curator,"2018-12-04 15:02:28.562200","actually in-frame. this is the same exact variant as the previous one",0,0,0,0,0,0,not_LoF,0,0
+11,21-033032095-GC-G,curator,"2018-12-04 15:15:30.625610","real early frameshift, no rescue",0,0,0,0,0,0,LoF,0,0
+12,21-033036098-TAAAGG-T,curator,"2018-12-04 15:19:50.169461","true 5bp frameshift deletion, splice site is rescued by downstream AG but resulting frame is shifted.",0,0,0,0,0,0,likely_LoF,0,0
+13,21-033036178-GA-G,curator,"2018-12-04 15:23:33.563679","",0,0,0,0,0,0,LoF,0,0
+14,21-033038788-AATCCTCT-A,curator,"2018-12-04 15:26:11.899267","",0,0,0,0,0,0,LoF,0,0
+15,21-033038833-T-C,curator,"2018-12-04 15:28:14.898644","",0,0,0,0,0,0,LoF,0,0
+16,21-033039619-CG-C,curator,"2018-12-04 15:28:59.043939","",0,0,0,0,0,0,LoF,0,0
+17,21-033039689-G-GT,curator,"2018-12-04 15:29:55.152878","splice donor D 1 site G->GT insertion creates its own new splice donor",0,0,0,1,0,0,not_LoF,0,0
+18,21-033039689-G-T,curator,"2018-12-04 15:32:48.228047","alternative GT donor 3 bases upstream, in-frame",0,0,0,1,0,0,not_LoF,0,0
+19,4-003076662-AACAG-A,curator,"2018-12-04 15:33:12.374652","CAG repeat artifact",1,0,0,0,0,0,not_LoF,0,0
+20,4-003076703-CTTCCT-C,curator,"2018-12-04 15:35:23.275445","repeat region",0,0,0,0,0,0,not_LoF,0,0
+21,4-003076704-T-TCC,curator,"2018-12-04 15:37:23.799588","repeat region, nearby SNP",0,0,0,0,0,0,likely_not_LoF,0,0
+22,4-003076710-AG-A,curator,"2018-12-04 15:38:12.622517","repeat region",0,0,0,0,0,0,,0,0
+23,4-003088708-TTGTC-T,curator,"2018-12-04 15:39:28.779599","true 4bp deletion",0,0,0,0,0,0,LoF,0,0
+24,4-003088729-CAT-C,curator,"2018-12-04 15:40:15.532540","true 2bp deletion",0,0,0,0,0,0,LoF,0,0
+25,4-003107083-G-A,curator,"2018-12-04 15:41:56.948963","essential splice acceptor lost. possible downstream rescue site is out-of-frame",0,0,0,0,0,0,LoF,0,0
+26,4-003117118-C-T,curator,"2018-12-04 15:42:50.029735","true stop codon",0,0,0,0,0,0,LoF,0,0
+27,4-003131650-G-A,curator,"2018-12-04 15:43:44.819765","true essential splice acceptor lost. 2 downstream splice rescue sites but both out of frame",0,0,0,0,0,0,LoF,0,0
+28,4-003133110-CA-C,curator,"2018-12-04 15:44:22.044996","true 1bp deletion",0,0,0,0,0,0,LoF,0,0
+29,4-003133110-CAG-C,curator,"2018-12-04 15:45:27.405375","true 2bp deletion",0,0,0,0,0,0,LoF,0,0
+30,4-003136141-GTC-G,curator,"2018-12-04 15:46:06.609235","true 2bp deletion",0,0,0,0,0,0,LoF,0,0
+31,4-003136269-T-G,curator,"2018-12-04 15:46:49.472289","raw reads not available. would be a true splice donor loss",0,0,0,0,0,0,uncertain_LoF,0,0
+32,4-003138025-C-T,curator,"2018-12-04 15:48:14.970480","likely stop codon, though there is an outside chance it creates a splice donor that preserves frame",0,0,0,0,0,0,likely_LoF,0,0
+33,4-003156065-C-T,curator,"2018-12-04 15:49:00.610173","true stop codon",0,0,0,0,0,0,LoF,0,0
+34,4-003158859-G-GT,curator,"2018-12-04 15:50:07.242423","true 1bp insertion",0,0,0,0,0,0,LoF,0,0
+35,4-003174671-C-T,curator,"2018-12-04 15:50:32.836423","true stop codon",0,0,0,0,0,0,LoF,0,0
+36,4-003174707-C-T,curator,"2018-12-04 15:51:02.695394","true stop codon",0,0,0,0,0,0,LoF,0,0
+37,4-003176464-C-T,curator,"2018-12-04 15:51:41.177494","true stop codon",0,0,0,0,0,0,LoF,0,0
+38,4-003176787-C-T,curator,"2018-12-04 15:52:35.887149","true stop codon",0,0,0,0,0,0,LoF,0,0
+39,4-003176796-C-T,curator,"2018-12-04 15:53:01.470306","true stop codon",0,0,0,0,0,0,LoF,0,0
+40,4-003184144-C-T,curator,"2018-12-04 15:54:34.595073","true stop codon",0,0,0,0,0,0,LoF,0,0
+41,4-003189579-CAAAT-C,curator,"2018-12-04 15:55:15.481833","true 4bp deletion",0,0,0,0,0,0,LoF,0,0
+42,4-003205754-CAA-C,curator,"2018-12-04 15:55:58.642791","raw reads not available",0,0,0,0,0,0,uncertain_LoF,0,0
+43,4-003205876-G-A,curator,"2018-12-04 15:57:05.698677","potential in-frame rescue site 3bp upstream",0,0,0,1,0,0,likely_not_LoF,0,0
+44,4-003209047-A-AT,curator,"2018-12-04 15:58:16.663157","true 1bp insertion",0,0,0,0,0,0,LoF,0,0
+45,4-003211578-TC-T,curator,"2018-12-04 15:59:59.451562","1bp deletion could be avoided by using potential splice acceptor at subsequent codon",0,0,0,0,0,0,likely_not_LoF,0,0
+46,4-003211677-G-T,curator,"2018-12-04 16:01:29.934097","MNP - D-1 and  1 site are both mutated to T. appears would still be true splice disruptor though",0,0,1,0,0,0,likely_LoF,0,0
+47,4-003215736-C-T,curator,"2018-12-04 16:02:10.362842","true stop codon",0,0,0,0,0,0,LoF,0,0
+48,4-003216836-G-A,curator,"2018-12-04 16:03:19.075506","potential in-frame donor rescue 6bp downstream",0,0,0,1,0,0,likely_not_LoF,0,0
+49,4-003221937-CG-C,curator,"2018-12-04 16:03:48.133654","true 1bp deletion",0,0,0,0,0,0,LoF,0,0
+50,4-003222036-G-A,curator,"2018-12-04 16:04:29.457456","true essential splice donor loss",0,0,0,0,0,0,LoF,0,0
+51,4-003224113-G-T,curator,"2018-12-04 16:05:29.219197","true essential splice acceptor lost",0,0,0,0,0,0,LoF,0,0
+52,4-003225261-CA-C,curator,"2018-12-04 16:06:04.391789","true 1bp deletion",0,0,0,0,0,0,LoF,0,0
+53,4-003237874-A-T,curator,"2018-12-04 16:07:04.143576","true essential splice acceptor lost",0,0,0,0,0,0,LoF,0,0
+54,4-003240172-A-G,curator,"2018-12-04 16:07:18.979116","raw reads not available",0,0,0,0,0,0,uncertain_LoF,0,0
+55,4-003240338-T-C,curator,"2018-12-04 16:08:20.579308","GC splice donor might still function, also alternate in-frame GT donor 9 bp upstream",0,0,0,1,0,0,likely_not_LoF,0,0

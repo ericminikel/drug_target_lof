@@ -1,0 +1,37 @@
+action	effect
+activator	positive
+adduct	other/unknown
+agonist	positive
+allosteric modulator	other/unknown
+antagonist	negative
+antibody	other/unknown
+binder	other/unknown
+binding	other/unknown
+blocker	negative
+chaperone	positive
+cleavage	other/unknown
+cofactor	positive
+component of	other/unknown
+degradation	negative
+deoxidizer	other/unknown
+gene replacement	positive
+incorporation into and destabilization	other/unknown
+inducer	positive
+inhibitor	negative
+inverse agonist	negative
+ligand	other/unknown
+modulator	other/unknown
+multitarget	other/unknown
+negative modulator	negative
+neutralizer	negative
+other/unknown	other/unknown
+oxidizer	other/unknown
+partial agonist	positive
+positive allosteric modulator	positive
+positive modulator	positive
+potentiator	positive
+stabilization	other/unknown
+stimulator	positive
+suppressor	negative
+unknown	other/unknown
+	other/unknown
