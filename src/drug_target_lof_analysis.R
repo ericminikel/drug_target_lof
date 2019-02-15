@@ -1,7 +1,6 @@
 setwd('~/d/sci/src/drug_target_lof/')
 options(stringsAsFactors=FALSE)
 library(sqldf)
-library(binom)
 library(plotrix)
 
 # the original ExAC paper repo still has some useful colors and functions and so on
