@@ -21,6 +21,20 @@ def print_dict_with_list(a_dictionary,dest=sys.stdout):
     for key in a_dictionary.keys():
         dest.write((key + "\t" + ("\t" if a_dictionary[key] is None else '\t'.join(a_dictionary[key])) + "\n").encode('utf8'))
 
+'''
+Same as above but when each dictionary entry is a list of N elements, print N rows with the key repeated.
+'''
+def print_dict_relational_list(a_dictionary,dest=sys.stdout):
+    for key in a_dictionary.keys():
+        if a_dictionary[key] is None:
+            continue
+        else:
+            for list_elem in a_dictionary[key]:
+                try:
+                    list_elem_safe = list_elem.decode('utf-8', 'replace')
+                except UnicodeEncodeError:
+                    list_elem_safe = 'UnicodeEncodeError'
+                dest.write((key + "\t" + list_elem_safe + "\n").encode('utf8'))
 
 '''
 Prints unique values from a dictionary, alphabetically, each only once.

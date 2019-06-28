@@ -20,8 +20,11 @@ $ cat drugbank.xml | grep "<group>" | sort | uniq -c
 #  179     <group>withdrawn</group>
 '''
 def parse_drugbank(drugbank_path,hgnc,debug=False):
+    drug_number = 1
     drug_gene = {} # keys will be drug generic names, values will be gene symbols
     drug_gene_action = {} # keys will be drug generic names, values will be list [gene symbol, action]
+    drug_classifications = {} # keys will be drug generic names, values will be list [classification, atc_code]
+    drug_categories = {} # keys will be drug generic names, values will be list of categories
     tree = ET.parse(drugbank_path)
     root = tree.getroot()
     drugs = root.findall("drug")
@@ -30,7 +33,6 @@ def parse_drugbank(drugbank_path,hgnc,debug=False):
         name = drug.find("name")
         if name is None:
             continue
-        generic_name = name.text.lower()
         # figure out if approved
         is_approved = False
         groups = drug.find("groups")
@@ -40,8 +42,10 @@ def parse_drugbank(drugbank_path,hgnc,debug=False):
                     is_approved = True
         if not is_approved:
             continue
+        generic_name = name.text.lower()
         if debug:
-            sys.stderr.write(generic_name+"\t")
+            sys.stderr.write('\rdrug ' + str(drug_number) + ': ' + generic_name)
+            drug_number += 1
         gene_symbol = ''
         action_text = ''
         targets_element = drug.find("targets")
@@ -78,23 +82,50 @@ def parse_drugbank(drugbank_path,hgnc,debug=False):
                         break
             drug_gene[generic_name] = gene_symbol # add key-value pair to dictionary
             drug_gene_action[generic_name] = [gene_symbol, action_text] # add key-value pair to dictionary
+            # figure out categories
+            drug_categories[generic_name] = []
+            cats_header = drug.findall("categories")
+            if cats_header is not None:
+                cats = cats_header[0].findall("category")
+                for cat in cats:
+                    cat_text = cat.find("category").text
+                    drug_categories[generic_name].append(cat_text)
+            # figure out type
+            dtype = drug.attrib['type']
+            # extract atc code
+            atc_code_text = ''
+            atc_codes_parent = drug.findall("atc-codes")
+            if atc_codes_parent is not None:
+                atc_codes = atc_codes_parent[0].findall("atc-code")
+                if atc_codes is not None and len(atc_codes) > 0:
+                    atc_code = atc_codes[0]
+                    atc_code_text = atc_code.attrib['code']
+            drug_classifications[generic_name] = [dtype, atc_code_text]
             if debug:
                 if gene_symbol is None:
                     print ""
                 else:
                     print gene_symbol
-    return [drug_gene, drug_gene_action]
+    return [drug_gene, drug_gene_action, drug_classifications, drug_categories]
 
 if __name__ == '__main__':
     hgnc = parse_hgnc("raw_data/gene_with_protein_product_2018_09_13.txt",mode='id')
-    parsed = parse_drugbank("raw_data/drugbank.xml",hgnc,debug=False)
+    parsed = parse_drugbank("raw_data/drugbank.xml",hgnc,debug=True)
     drug_gene = parsed[0]
     drug_gene_action = parsed[1]
+    drug_classifications = parsed[2]
+    drug_categories = parsed[3]
     with open('data/drug_gene_match.tsv',mode='w') as f:
         f.write("drug\tgene\n")
         print_dict(drug_gene,f)
     with open('data/drug_gene_action_match.tsv',mode='w') as f:
         f.write("drug\tgene\taction\n")
         print_dict_with_list(drug_gene_action,f)
+    with open('data/drug_classifications.tsv',mode='w') as f:
+        f.write("drug\ttype\tatc\n")
+        print_dict_with_list(drug_classifications,f)
+    with open('data/drug_categories.tsv',mode='w') as f:
+        f.write("drug\tcategory\n")
+        print_dict_relational_list(drug_categories,f)
     with open('lists/fda_approved_drug_targets.tsv',mode='w') as f:
         print_values(drug_gene,f)

@@ -1,4 +1,4 @@
-gene	variant	allele_count	filter_status	LOFTEE_flags	curation_result	comments
+gene	variant	allele_count	filter_status	loftee_flags	curation_result	comments
 HTT	4-003076620-AGC-A	14	loftee	lcr		
 HTT	4-003076623-AGCAG-A	14	loftee	lcr		
 HTT	4-003076631-CAG-C	1	loftee	lcr		

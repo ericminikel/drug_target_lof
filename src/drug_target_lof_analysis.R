@@ -60,22 +60,27 @@ if (!('caf' %in% ls())) {
 }
 
 # GTEx expression data
-if (!('tissues' %in% ls())) {
+regenerate_tissue_data = FALSE
+if (regenerate_tissue_data) {
   tissues = read.table('data/expression/GTEx_Analysis_2016-01-15_v7_RNASeQCv1.1.8_gene_median_tpm.gct.gz',sep='\t',header=T,comment.char='',skip=2)
   tissues$ensg = gsub('\\..*','',tissues$gene_id)
   tissues$n1tpm = 0
   for (i in 1:nrow(tissues)) {
     tissues$n1tpm[i] = sum(tissues[i,3:55] > 1)
+    tissues$medtpm[i] = median(as.numeric(tissues[i,3:55]))
     cat(paste("\r",percent(i/nrow(tissues))," done...",sep=""))
     flush.console()
   }
+  write.table(tissues[,c('ensg','n1tpm','medtpm')], 'data/expression/tissue_expression.tsv', sep='\t', col.names=T, row.names=F, quote=F)
 }
+tissues = read.table('data/expression/tissue_expression.tsv', sep='\t', header=T)
 
-# HGNC-Ensembl mapping for GTEx
+# map GTEx ENSG ids to HGNC gene symbols
 hgnc_ensembl = read.table('data/expression/hgnc_ensembl_mapping.tsv',sep='\t',header=T,quote='',comment.char='')
 colnames(hgnc_ensembl)[c(2,9)] = c('symbol','ensg')
+#tissues$ensg = gsub('\\..*','',tissues$gene_id)
 tissues$symbol = hgnc_ensembl$symbol[match(tissues$ensg,hgnc_ensembl$ensg)]
-  
+
 # merge all datasets into one "genes" table to make sure we have the same denominator for everything,
 # no confounders due to missing values, etc.
 genes = universe
@@ -105,12 +110,72 @@ genes$exp_syn = gstraint$exp_syn[match(genes$symbol,gstraint$gene)]
 genes$oe_syn = genes$obs_syn / genes$exp_syn
 # tissue fields
 genes$n1tpm = tissues$n1tpm[match(genes$symbol, tissues$symbol)]
+genes$all1tpm  = genes$n1tpm == 53
+genes$none1tpm = genes$n1tpm == 0
+genes$some1tpm = genes$n1tpm > 0 & genes$n1tpm < 53
+genes$medtpm = tissues$medtpm[match(genes$symbol, tissues$symbol)]
+genes$ptile_medtpm = rank(genes$medtpm, na.last='keep')/sum(!is.na(genes$medtpm))
+genes$topquartile_medtpm = genes$ptile_medtpm > .75
+genes$botquartile_medtpm = genes$ptile_medtpm < .25
+genes$interquartile_medtpm = genes$ptile_medtpm >= .25 & genes$ptile_medtpm <= .75
 
-# remove TTN for Figure 1
+# read in gene lists
+list_of_lists = read.table(textConnection("
+filename
+universe
+olfactory_receptors
+homozygous_lof_tolerant_twohit
+blekhman_ar
+blekhman_ad
+CEGv2_subset_universe
+clingen_level3_genes_2018_09_13
+drug_targets
+positive_targets
+negative_targets
+other_targets
+drug_mod_sm
+drug_mod_ab
+drug_mod_oth
+drug_indic_oncology
+drug_indic_cardiovascular
+drug_indic_endocrine
+drug_indic_metabolic
+drug_indic_neurology
+drug_indic_respiratory
+drug_indic_skeletomuscular
+drug_indic_other
+universe
+drug_targets
+rhodop_gpcr
+ion_channels
+nuclear_receptors
+enzymes
+gwascatalog
+omim_genes
+"),sep='',header=TRUE)
+for (i in 1:nrow(list_of_lists)) {
+  path = paste('lists/',list_of_lists$filename[i],'.tsv',sep='')
+  gene_list = read.table(path)
+  if (dim(gene_list)[1] < 1) {
+    print(paste("No contents in gene list: ",list_of_lists$filename[i],sep=''))
+    next
+  }
+  genes[,list_of_lists$filename[i]] = genes$symbol %in% gene_list$V1
+}
+
+# check overlap
+sum(genes$drug_targets & genes$omim_genes)
+genes$symbol[genes$drug_targets & genes$omim_genes]
+
+# additional drugbank-extracted data
+dclass = read.table('data/drugbank/drug_classifications.tsv',sep='\t',header=T)
+dcats = read.table('data/drugbank/drug_categories.tsv',sep='\t',header=T)
+
+# remove TTN for Figure 0
 non_ttn = genes$symbol != 'TTN'
 
-### Begin Figure 1
-png('figures/figure1.png',width=2400,height=900,res=300)
+### Begin Figure 0 - won't go in revised paper but may be useful for presentations etc.
+png('figures/figure_0.png',width=2400,height=900,res=300)
 par(mfrow=c(1,3))
 plot(genes$exp_syn[non_ttn], genes$obs_syn[non_ttn], xaxs='i', yaxs='i', xlim=c(0,1000), ylim=c(0,1000), pch=20, cex=0.5, col=alpha(k_syn,0.2), xlab='expected', ylab='observed', yaxt='n', xaxt='n')
 m = lm(obs_syn ~ exp_syn + 0, data=genes[non_ttn,])
@@ -139,8 +204,8 @@ mtext('c', side=3, cex=2.0, adj = -0.1, line = 0.3)
 dev.off() ### -- End Figure 1
 
 
-# Read in gene lists for Figure 2
-list_metadata = read.table(textConnection("
+# Set up for figure 1 forest plot
+lof_oe = read.table(textConnection("
 filename|display
 universe|all
 olfactory_receptors|olfactory receptors
@@ -153,26 +218,19 @@ drug_targets|drug targets
 positive_targets|positive
 negative_targets|negative
 other_targets|other & unknown
-rhodop_gpcr|rhodopsin-like GPCRs
-ion_channels|ion channels
-nuclear_receptors|nuclear receptors
-enzymes|enzymes
-gwascatalog|GWAS hits
+drug_mod_sm|small molecule
+drug_mod_ab|antibody
+drug_mod_oth|other
+drug_indic_oncology|cancer
+drug_indic_cardiovascular|cardiovascular
+drug_indic_endocrine|endocrine
+drug_indic_metabolic|metabolic & alimentary
+drug_indic_neurology|neurological
+drug_indic_respiratory|respiratory
+drug_indic_skeletomuscular|skeletomuscular
+drug_indic_other|other
 "),sep='|',header=TRUE)
 
-for (i in 1:nrow(list_metadata)) {
-  path = paste('lists/',list_metadata$filename[i],'.tsv',sep='')
-  gene_list = read.table(path)
-  if (dim(gene_list)[1] < 1) {
-    print(paste("No contents in gene list: ",list_metadata$filename[i],sep=''))
-    next
-  }
-  genes[,list_metadata$filename[i]] = genes$symbol %in% gene_list$V1
-}
-
-
-# Make a table with all the forest plot data for Figure 2
-lof_oe = list_metadata[1:11,]
 lof_oe$mean = 0.0
 lof_oe$upper95 = 0.0
 lof_oe$lower95 = 0.0
@@ -192,13 +250,11 @@ for (i in 1:dim(lof_oe)[1]) {
 lof_oe$y = -1:(-1*dim(lof_oe)[1])
 lof_oe$color = '#777777'
 lof_oe$color[lof_oe$filename=='universe'] = '#000000'
-lof_oe$color[lof_oe$filename %in% c('drug_targets','positive_targets','negative_targets','other_targets')] = '#2E37FE'
+lof_oe$color[lof_oe$filename %in% c('drug_targets')] = '#2E37FE'
 
-
-
-### Begin Figure 2
-png('figures/figure2.png',width=2400,height=2000,res=300)
-layout(matrix(c(1,1,2,2,2),byrow=T,nrow=5))
+### Begin Figure 1
+png('figures/figure_1.png',width=1800,height=2400,res=300)
+layout(matrix(c(1,2,2,2),byrow=T,nrow=4))
 
 # Panel A: histogram
 # note it is a histogram even though it is plotted with polygon() so it looks like a density plot
@@ -228,7 +284,7 @@ text(x=c(h_all_mean,h_drug_mean),y=c(.11,.11),pos=c(4,2),font=2,labels=paste(c('
 mtext('a', side=3, cex=2, adj = -0.05, line = 0.5)
 
 # Panel B: Forest plot
-par(mar=c(4,18,3,3))
+par(mar=c(4,20,3,3))
 plot(NA,NA, xlim=c(0,1), ylim=expand.range(range(lof_oe$y),by=.75), axes=FALSE, xlab='', ylab='')
 abline(v=lof_oe$mean[lof_oe$filename=='universe'], lty=3, col='#333333', lwd=2)
 par(xpd=T) # allow 95%CI to extend beyond xlims of [0,1]
@@ -237,22 +293,29 @@ par(xpd=F)
 points(x=lof_oe$mean, y=lof_oe$y, col=lof_oe$color, pch=19, cex=1.5)
 axis(side=1, at=(0:4)/4, labels=percent((0:4)/4), lwd=0, lwd.ticks=1)
 abline(v=c(0,1))
-mtext(side=2, at=lof_oe$y, text=lof_oe$display, las=2, cex = .9)
+specials = c('drug targets','all')
+mtext(side=2, at=lof_oe$y[!lof_oe$display %in% specials], text=lof_oe$display[!lof_oe$display %in% specials], las=2, cex = .9)
+mtext(side=2, at=lof_oe$y[lof_oe$display=='drug targets'], text='all drug targets', las=2, cex = .9, font=2)
+mtext(side=2, at=lof_oe$y[lof_oe$display=='all'], text='all genes', las=2, cex = .9, font=2)
 mtext(side=1, text='mean (95%CI) pLoF obs/exp ratio', cex=1, line = 2.5)
 par(xpd=T)
 abline(h=lof_oe$y[lof_oe$filename=='universe']+c(.5,-.5), col='#777777', lwd=.5)
 abline(h=lof_oe$y[lof_oe$filename=='drug_targets']+c(.5,-.5,-3.5), col='#777777', lwd=.5)
+abline(h=lof_oe$y[lof_oe$filename=='drug_mod_sm']+c(-2.5), col='#777777', lwd=.5)
+abline(h=lof_oe$y[lof_oe$filename=='drug_indic_other']+c(-.5), col='#777777', lwd=.5)
 par(xpd=F)
-mtext(side=2, at=-4.5, line=13, text='gene lists\nfor comparison\n', cex=0.8, font=2)
-mtext(side=2, at=-10.0, line=13, text="by drug\neffect\non target", cex=0.8, font=2)
+mtext(side=2, at=-4.5, line=13, text='comparators', cex=0.8, font=2, las=2)
+mtext(side=2, at=-10.0, line=13, text="by effect", cex=0.8, font=2, las=2)
+mtext(side=2, at=-13.0, line=13, text="by modality", cex=0.8, font=2, las=2)
+mtext(side=2, at=-18.5, line=13, text="by indication", cex=0.8, font=2, las=2)
 
 mtext('b', side=3, cex=2, adj = -0.4, line = 0.3)
 
-dev.off() ### -- End Figure 2
+dev.off() ### -- End Figure 1
 
 
 
-# stats & numbers quoted in text apropos Figure 2
+# stats & numbers quoted in text apropos Figure 1
 ks.test(genes$oe_lof[genes$drug_targets], genes$oe_lof) # is the obs/exp difference between drug targets & all genes significant?
 mean(genes$oe_lof[genes$clingen_level3_genes_2018_09_13], na.rm=T) # mean obs/exp for HI genes
 sum(genes$oe_lof < mean(genes$oe_lof[genes$clingen_level3_genes_2018_09_13], na.rm=T), na.rm=T) # how many genes are below this threshold?
@@ -278,16 +341,12 @@ subset_to_browse = drug_gene_action_match[drug_gene_action_match$negative & drug
 subset_to_browse = subset_to_browse[with(subset_to_browse,order(oe_lof,gene)),]
 # View(subset_to_browse)
 
-# Stats and numbers quoted in text apropos Figure 3
 
-# how enriched are the top four "druggable" classes among drug targets?
-genes$any_canonically_druggable_class = genes$rhodop_gpcr | genes$enzymes | genes$ion_channels | genes$nuclear_receptors
-drug_classes = table(genes[,c("drug_targets","any_canonically_druggable_class")])
-drug_classes
-f = fisher.test(drug_classes)
-f
-f$p.value
 
+
+
+
+# Stats and numbers quoted in Figure ED1 legend or in main text in earlier versions of manuscript
 
 # check for overlap between the classes
 table(genes[,c('rhodop_gpcr','enzymes')]) # none
@@ -304,39 +363,33 @@ genes$family[genes$enzymes] = 'enzymes'
 genes$family[genes$ion_channels] = 'ion_channels'
 genes$family[genes$nuclear_receptors] = 'nuclear_receptors'
 
-# how does controlling for family affect obs/exp of drug targets vs. all genes?
-m = lm(genes$oe_lof ~ genes$drug_targets + genes$family)
-summary(m)
+# same for disease association
+genes$dz_assoc = 'none'
+genes$dz_assoc[genes$gwascatalog & !genes$omim_genes] = 'GWAS only'
+genes$dz_assoc[!genes$gwascatalog & genes$omim_genes] = 'OMIM only'
+genes$dz_assoc[genes$gwascatalog & genes$omim_genes] = 'both'
 
-# are GWAS hits enriched in drug targets?
-drug_gwas = table(genes[,c('gwascatalog','drug_targets')])
-drug_gwas
-fisher.test(drug_gwas)
-
-# how does controlling for GWAS hit status affect obs/exp of drug targets vs. all genes?
-m = lm(genes$oe_lof ~ genes$drug_targets + genes$gwascatalog)
-summary(m)
+# does controlling for all the Figure ED1 factors account for difference between drug targets & other genes?
+m = lm(oe_lof ~ drug_targets + n1tpm + family + dz_assoc, data=genes)
+summary(m) # no - drug targets still more constrained by a difference of -7.8% obs/exp, P = 0.00012
 
 
-# average number of tissues exprssed for drug targets and non drug targets:
-mean(genes$n1tpm[genes$drug_targets], na.rm=T)
-mean(genes$n1tpm, na.rm=T)
-# is the difference significant?
-ks.test(genes$n1tpm[genes$drug_targets], genes$n1tpm)
-# look at the full distributions too:
-#hist(genes$n1tpm[genes$drug_targets]) 
-#hist(genes$n1tpm[!genes$drug_targets])
-# is constraint correlated with expression:
-cor.test(genes$n1tpm, genes$oe_lof, method='spearman')
-cor.test(genes$n1tpm, genes$oe_lof, method='spearman')$p.value
-# how does expression across tissues affect obs/exp of drug targets vs. all genes?
-m = lm(oe_lof ~ drug_targets + n1tpm, data=genes)
-summary(m)
+# create forest plot data for Figure ED1
+forest2 =  read.table(textConnection("
+filename|display|color
+universe|all genes|#000000
+drug_targets|all drug targets|#666666
+rhodop_gpcr|rhodopsin-like GPCRs|#008837
+ion_channels|ion channels|#EEB422
+nuclear_receptors|nuclear receptors|#2C7BB6
+enzymes|enzymes|#7B3294
+gwascatalog|GWAS hits|#B2182B
+omim_genes|OMIM genes|#542788
+all1tpm|all|#67001F
+some1tpm|some|#E7298A
+none1tpm|none|#D7B5D8
+"),sep='|',header=TRUE,comment.char='')
 
-
-# create forest plot data for Figure 3
-
-forest2 = list_metadata[c(1,8,12:15),]
 forest2$mean = 0.0
 forest2$upper95 = 0.0
 forest2$lower95 = 0.0
@@ -355,6 +408,11 @@ forest2$drug_n = 0
 
 i = 1
 for (i in 1:dim(forest2)[1]) {
+  filename = paste('lists/',forest2$filename[i],'.tsv',sep='')
+  if (file.exists(filename)) {
+    genelist = read.table(filename,sep='\t',header=F)$V1
+    genes[,forest2$filename[i]] = genes$symbol %in% genelist
+  }
   in_list = as.logical(genes[,forest2$filename[i]])
   oe_mean = mean(genes$oe_lof[in_list], na.rm=T)
   oe_sd = sd(genes$oe_lof[in_list], na.rm=T)
@@ -384,53 +442,67 @@ for (i in 1:dim(forest2)[1]) {
 }
 
 forest2$y = -1:(-1*dim(forest2)[1])
-forest2$color[1] = '#000000'
-forest2$color[2] = '#666666'
-forest2$color[3:6] = c('#008837','#EEB422','#2C7BB6','#7B3294')
 
+### Begin Figure ED1
+png('figures/figure_ed1.png',width=3600,height=1600,res=300)
 
-### Begin Figure 3
-png('figures/figure3.png',width=2400,height=1000,res=300)
-layout_matrix = matrix(c(1,1,1,2,3),nrow=1,byrow=T)
-layout(layout_matrix, heights=c(1,1))
+layout_matrix = matrix(c(1,1,1,2,2,3,
+                         1,1,1,2,2,4,
+                         1,1,1,2,2,5),nrow=3,byrow=T)
+layout(layout_matrix, heights=c(1,1,1))
 
-par(mar=c(4,15,3,3))
+par(mar=c(4,20,3,3))
 
 ylims = expand.range(range(forest2$y),by=.75)
 
 # panel A - forest plot
-plot(NA,NA, xlim=c(0,1), ylim=ylims, axes=FALSE, xlab='', ylab='')
+plot(NA,NA, xlim=c(0,1), ylim=ylims, axes=FALSE, xlab='', ylab='', xaxs='i', yaxs='i')
 abline(v=forest2$mean[forest2$filename=='universe'], lty=3, col='#333333', lwd=2)
 segments(x0=forest2$lower95, x1=forest2$upper95, y0=forest2$y, col=forest2$color, lwd=3)
 points(x=forest2$mean, y=forest2$y, col=forest2$color, pch=19, cex=1.5)
 empty_circle_color = forest2$color[forest2$filename=='drug_targets']
-points(x=forest2$drug_mean[3:6], y=forest2$y[3:6], col=empty_circle_color, pch=1, lwd=2, cex=1.5)
+points(x=forest2$drug_mean[3:nrow(forest2)], y=forest2$y[3:nrow(forest2)], col=empty_circle_color, pch=1, lwd=2, cex=1.5)
 
 axis(side=1, at=(0:4)/4, labels=percent((0:4)/4), lwd=0, lwd.ticks=1)
 abline(v=c(0,1))
-mtext(side=2, at=forest2$y, text=forest2$display, las=2, cex = .9)
-mtext(side=1, text='mean (95%CI) pLoF obs/exp ratio', cex=.7, line = 2.5)
+mtext(side=2, line=1, at=forest2$y[1:2], text=forest2$display[1:2], las=2, cex = .9, font=2)
+mtext(side=2, line=1, at=forest2$y[3:nrow(forest2)], text=forest2$display[3:nrow(forest2)], las=2, cex = .9)
+mtext(side=1, text='mean (95%CI) pLoF obs/exp ratio', cex=1, line = 2.5)
 par(xpd=T)
 abline(h=forest2$y[forest2$filename=='drug_targets']+c(.5,-.5), col='#777777', lwd=.5)
 abline(h=forest2$y[forest2$filename=='enzymes']+c(-.5), col='#777777', lwd=.5)
+abline(h=forest2$y[forest2$filename=='omim_genes']+c(-.5), col='#777777', lwd=.5)
+abline(h=forest2$y[forest2$filename=='none1tpm']+c(-.5), col='#777777', lwd=.5)
+abline(h=forest2$y[forest2$filename=='botquartile_medtpm']+c(-.5), col='#777777', lwd=.5)
 par(xpd=F)
+mtext(side=2, at=-4.5, line=11, text='protein\nfamily', cex=0.8, font=2, las=2)
+mtext(side=2, at=-7.5, line=11, text="human\ndisease\nassociation", cex=0.8, font=2, las=2)
+mtext(side=2, at=-10.0, line=11, text="tissues with\nexpression\n>1 TPM", cex=0.8, font=2, las=2)
+
+
 mtext('a', side=3, cex=2, adj = 0.0, line = 0.3)
 
-par(mar=c(4,2,3,1))
+par(mar=c(4,2,3,3))
 
 # panel B - barplot of fold enrichment with 95% CI error bars
-plot(NA, NA, xlim=c(1,64), ylim=ylims, axes=FALSE, ann=FALSE,log='x',xaxs='i',yaxs='i')
+plot(NA, NA, xlim=c(1/64,64), ylim=ylims, axes=FALSE, ann=FALSE,log='x',xaxs='i',yaxs='i')
 abline(v=1)
-for (i in 2:6) {
+for (i in 3:nrow(genes)) {
   segments(x0=1,x1=forest2$enrichment[i],y0=forest2$y[i],y1=forest2$y[i],col=forest2$color[i],lend=1,lwd=25)
   arrows(x0=forest2$enrichment_l95[i],x1=forest2$enrichment_u95[i],y0=forest2$y[i],y1=forest2$y[i],col='black',lwd=1,angle=90,length=0.05,code=3)
 }
-axis(side=1, at=2^(0:6), labels=NA)
-axis(side=1, at=2^(c(0,2,4,6)), labels=2^(c(0,2,4,6)), lwd=0, lwd.ticks=0)
-mtext(side=1,line=2.5,text='fold enrichment',cex=.7)
-mtext('b', side=3, cex=2, adj = 0.0, line = 0.3)
+axis(side=1, at=2^(-6:6), labels=NA)
+axis(side=1, at=2^(c(-6,-4,-2,0,2,4,6)), labels=2^(c(6,4,2,0,2,4,6)), lwd=0, lwd.ticks=0)
+axis(side=1,line=1.5,at=c(1/8,8),labels=c('fold depletion','fold enrichment'),lwd=0, lwd.ticks=0, cex.axis=1.5)
+par(xpd=T)
+abline(h=forest2$y[forest2$filename=='drug_targets']+c(-.5), col='#777777', lwd=.5)
+abline(h=forest2$y[forest2$filename=='enzymes']+c(-.5), col='#777777', lwd=.5)
+abline(h=forest2$y[forest2$filename=='omim_genes']+c(-.5), col='#777777', lwd=.5)
+abline(h=forest2$y[forest2$filename=='none1tpm']+c(-.5), col='#777777', lwd=.5)
+abline(h=forest2$y[forest2$filename=='botquartile_medtpm']+c(-.5), col='#777777', lwd=.5)
+par(xpd=F)
 
-par(mar=c(4,2,3,1))
+mtext('b', side=3, cex=2, adj = 0.0, line = 0.3)
 
 # panel C - stacked bar plot of how many drug targets are in each family
 target_counts = as.data.frame(table(genes$family[genes$drug_targets]))
@@ -440,6 +512,8 @@ target_counts$y = forest2$y[match(target_counts$family,forest2$filename)]
 target_counts$color[target_counts$family=='other'] = '#AAAAAA'
 target_counts$y[target_counts$family=='other'] = -7
 target_counts = target_counts[with(target_counts, order(y)),]
+
+par(mar=c(1,4,3,2))
 plot(NA,NA,xlim=c(0,1),ylim=c(0,400),axes=FALSE,ann=FALSE,yaxs='i')
 running_total = 0
 for (i in 1:nrow(target_counts)) {
@@ -451,14 +525,79 @@ axis(side=1, at=c(-100,100))
 axis(side=2,at=(0:4)*100,las=2)
 mtext('c', side=3, cex=2, adj = 0.0, line = 0.3)
 
-dev.off() ### -- End Figure 3
+# panel D - stacked bar plot of GWAS + OMIM genes
+dz_assoc_counts = data.frame(cat=c('none','OMIM only','both','GWAS only'),
+                             color=c('#666666','#542788','','#B2182B'))
+
+for (i in 1:nrow(dz_assoc_counts)) {
+  dz_assoc_counts$count[i] = sum(genes$dz_assoc[genes$drug_targets]==dz_assoc_counts$cat[i])
+}
+
+plot(NA,NA,xlim=c(0,1),ylim=c(0,400),axes=FALSE,ann=FALSE,yaxs='i')
+running_total = 0
+for (i in 1:nrow(dz_assoc_counts)) {
+  if (dz_assoc_counts$cat[i]=='both') {
+    rect(ybottom=running_total, ytop=running_total + dz_assoc_counts$count[i], xleft=0, xright=1, col=dz_assoc_counts$color[4], border=NA)
+    rect(ybottom=running_total, ytop=running_total + dz_assoc_counts$count[i], xleft=0, xright=1, col=dz_assoc_counts$color[2], density=20, angle=45, lwd=2, border=NA)
+  } else {
+    rect(ybottom=running_total, ytop=running_total + dz_assoc_counts$count[i], xleft=0, xright=1, col=dz_assoc_counts$color[i], border=NA)
+  }
+  running_total = running_total + dz_assoc_counts$count[i]
+}
+axis(side=1, at=c(-100,100))
+axis(side=2,at=(0:4)*100,las=2)
+mtext('d', side=3, cex=2, adj = 0.0, line = 0.3)
 
 
-### Begin Figure 4 - possibility of ascertaining LoF individuals
+# panel E - stacked bar plot of tissue expression broadness
+genes$tissexp = ''
+genes$tissexp[genes$all1tpm] = 'all'
+genes$tissexp[genes$some1tpm] = 'some'
+genes$tissexp[genes$none1tpm] = 'none'
+tissexp_counts = data.frame(cat=c('none','some','all'),
+                            color=c('#D7B5D8','#E7298A','#67001F'))
 
-png('figures/figure4.png',width=2400,height=3600,res=500)
+for (i in 1:nrow(tissexp_counts)) {
+  tissexp_counts$count[i] = sum(genes$tissexp[genes$drug_targets]==tissexp_counts$cat[i])
+}
 
-par(mfrow=c(3,1))
+plot(NA,NA,xlim=c(0,1),ylim=c(0,400),axes=FALSE,ann=FALSE,yaxs='i')
+running_total = 0
+for (i in 1:nrow(tissexp_counts)) {
+  rect(ybottom=running_total, ytop=running_total + tissexp_counts$count[i], xleft=0, xright=1, col=tissexp_counts$color[i], border=NA)
+  running_total = running_total + tissexp_counts$count[i]
+}
+axis(side=1, at=c(-100,100))
+axis(side=2,at=(0:4)*100,las=2)
+mtext('e', side=3, cex=2, adj = 0.0, line = 0.3)
+
+dev.off() ### -- End Figure ED1
+
+
+
+
+
+
+
+
+mo_het_lethal = read.table('lists/mo_het_lethal.tsv',sep='\t',header=F)
+genes$mo_het_lethal = genes$symbol %in% mo_het_lethal$V1
+
+sum(genes$drug_targets & genes$mo_het_lethal)
+sum(genes$negative_targets & genes$mo_het_lethal)
+genes$symbol[genes$negative_targets & genes$mo_het_lethal]
+
+
+
+
+
+
+### Begin Figure 2 - prospects for ascertaining LoF individuals
+
+png('figures/figure_2.png',width=2400,height=2400,res=300)
+
+layout_matrix = matrix(c(1,1,1,2,2,2,3,3,3,4,5,5),nrow=4,byrow=T)
+layout(layout_matrix, heights=c(1,1,1,1.75))
 
 # decide on right histogram breaks for all plots
 lowest_p = min(genes$p[genes$p > 0])
@@ -499,12 +638,12 @@ polygon(x=c(log10(het_hist$mids[2:n_bins]),1), y=c(het_hist$counts[2:n_bins],0),
 rect(xleft=log10(hom_hist$mids[1])-.25, xright=log10(hom_hist$mids[1])+.25, ybottom=0, ytop=hom_hist$counts[1], lwd=3, border=hom_k, col=alpha(hom_k,.2))
 points(log10(hom_hist$mids[2:n_bins]), hom_hist$counts[2:n_bins], type='l', lwd=3, col=hom_k)
 polygon(x=c(log10(hom_hist$mids[2:n_bins]),1), y=c(hom_hist$counts[2:n_bins],0), border=NA, col=alpha(hom_k,.2))
+par(xpd=T)
 segments(x0=log10(1/world_population),y0=0,y1=label_y,lwd=0.5)
 segments(x0=log10(1/gnomad),y0=0,y1=label_y,lwd=0.5)
 text(x=log10(1/world_population),y=label_y,pos=3,labels='1\non\nEarth')
 text(x=log10(1/gnomad),y=label_y,pos=3,labels='1\nin\ngnomAD')
-par(xpd=T)
-legend(x=-4,y=7500,legend=c('heterozygotes','homozygotes &\ncompound hets'),text.col=c(het_k,hom_k),border=c(het_k,hom_k),fill=alpha(c(het_k,hom_k),.2),bty='n',cex=1.2)
+legend(x=-3,y=7500,legend=c('heterozygotes','homozygotes &\ncompound hets'),text.col=c(het_k,hom_k),border=c(het_k,hom_k),fill=alpha(c(het_k,hom_k),.2),bty='n',cex=1.2)
 par(xpd=F)
 
 mtext('a', side=3, cex=2, adj = 0.0, line = 0.3)
@@ -534,11 +673,11 @@ polygon(x=c(log10(het_hist$mids[2:n_bins]),1), y=c(het_hist$counts[2:n_bins],0),
 rect(xleft=log10(hom_hist$mids[1])-.25, xright=log10(hom_hist$mids[1])+.25, ybottom=0, ytop=min(hom_hist$counts[1],ymax), lwd=3, border=hom_k, col=alpha(hom_k,.2))
 points(log10(hom_hist$mids[2:n_bins]), hom_hist$counts[2:n_bins], type='l', lwd=3, col=hom_k)
 polygon(x=c(log10(hom_hist$mids[2:n_bins]),1), y=c(hom_hist$counts[2:n_bins],0), border=NA, col=alpha(hom_k,.2))
+par(xpd=T)
 segments(x0=log10(1/finland_population),y0=0,y1=label_y,lwd=0.5)
 segments(x0=log10(1/gnomad_finns),y0=0,y1=label_y,lwd=0.5)
 text(x=log10(1/finland_population),y=label_y,pos=3,labels='1\nin\nFinland')
 text(x=log10(1/gnomad_finns),y=label_y,pos=3,labels='1\nin\ngnomAD Finns')
-par(xpd=T)
 par(xpd=F)
 
 mtext('b', side=3, cex=2, adj = 0.0, line = 0.3)
@@ -569,54 +708,137 @@ polygon(x=c(log10(het_hist$mids[2:n_bins]),1), y=c(het_hist$counts[2:n_bins],0),
 rect(xleft=log10(hom_hist$mids[1])-.25, xright=log10(hom_hist$mids[1])+.25, ybottom=0, ytop=hom_hist$counts[1], lwd=3, border=hom_k, col=alpha(hom_k,.2))
 points(log10(hom_hist$mids[2:n_bins]), hom_hist$counts[2:n_bins], type='l', lwd=3, col=hom_k)
 polygon(x=c(log10(hom_hist$mids[2:n_bins]),1), y=c(hom_hist$counts[2:n_bins],0), border=NA, col=alpha(hom_k,.2))
+par(xpd=T)
 segments(x0=log10(1/world_consang_population),y0=0,y1=label_y,lwd=0.5)
 segments(x0=log10(1/gnomad_consang),y0=0,y1=label_y,lwd=0.5)
 text(x=log10(1/world_consang_population),y=label_y,pos=3,labels='1\nconsanguineous\nworldwide')
 text(x=log10(1/gnomad_consang),y=label_y,pos=3,labels='1\nconsanguineous\nin gnomAD')
-par(xpd=T)
 par(xpd=F)
 
 mtext('c', side=3, cex=2, adj = 0.0, line = 0.3)
 
-dev.off() ### -- End Figure 4
+# construct the "roadmap" categories for Figure 2
+genes$pli = gstraint$pLI[match(genes$symbol,gstraint$gene)]
+genes$roadmap_cat = ''
+genes$roadmap_cat[genes$omim_genes] = 'omim'
+genes$roadmap_cat[genes$roadmap_cat=='' & genes$pli > 0.9] = 'high_pli'
+genes$roadmap_cat[genes$roadmap_cat=='' & genes$p==0] = 'gnomad_none'
+genes$roadmap_cat[genes$roadmap_cat=='' & genes$p > 0] = 'gnomad_has'
 
+roadmap_stack = data.frame(cat=c('omim','high_pli','gnomad_none','gnomad_has'),
+                           desc=c('human disease\nassociation known*','likely haploinsufficient','pLoF not yet observed','pLoF observed in gnomAD'),
+                           col=c('#2E0854','#283A90','#5993E5','#458B00'))
+for (i in 1:nrow(roadmap_stack)) {
+  roadmap_stack$n[i] = sum(genes$roadmap_cat==roadmap_stack$cat[i])
+}
+roadmap_stack$end_y = cumsum(roadmap_stack$n)
+roadmap_stack$start_y = cumsum(roadmap_stack$n) - roadmap_stack$n
+roadmap_stack$mid_y = (roadmap_stack$start_y + roadmap_stack$end_y) / 2
 
-# stats for text apropos Figure 4
 
 corrected_threshold = 0.05 / nrow(genes)
 
-# In this sample size, 75% of genes (N=14,340) would still be expected to have <1 double null individual...
-sum(!is.na(genes$p) & genes$p ^ 2 * gnomad * 100 < 1)
-sum(!is.na(genes$p))
-sum(!is.na(genes$p) & genes$p ^ 2 * gnomad * 100 < 1) / sum(!is.na(genes$p))
-(sum(!is.na(genes$p)) - sum(!is.na(genes$p) & genes$p ^ 2 * gnomad * 100 < 1))
-(sum(!is.na(genes$p)) - sum(!is.na(genes$p) & genes$p ^ 2 * gnomad * 100 < 1)) / sum(!is.na(genes$p))
+outbred_sizes = round(c(141456, 10^(seq(5.25,9.5,by=.25)), world_population))
+consang_sizes = round(c(2912, 10^(seq(3.5,8.75,by=.25)), world_consang_population))
 
-# and 91% of genes (N=17,546) — including 92% of existing approved drug targets (N=357) —would have sufficiently few expected "knockouts" ...
-genes$qbinom_gnomad100 = qbinom(p=corrected_threshold, size=gnomad*100, prob=genes$p^2)
-sum(genes$qbinom_gnomad100 == 0) # 17546
-sum(genes$qbinom_gnomad100 == 0) / nrow(genes) # 91.4% of genes
-(nrow(genes) - sum(genes$qbinom_gnomad100 == 0)) # 1648
-(nrow(genes) - sum(genes$qbinom_gnomad100 == 0))/nrow(genes) # 8.6%
+# counts and percents of genes for roadmap paragraph in text
+table(genes$roadmap_cat)
+table(genes$roadmap_cat) / nrow(genes)
 
-# including 92% of existing approved drug targets (N=357) 
-sum(!is.na(genes$qbinom_gnomad100) & genes$qbinom_gnomad100 == 0 & genes$drug_targets)
-sum(!is.na(genes$qbinom_gnomad100) & genes$drug_targets)
-sum(!is.na(genes$qbinom_gnomad100) & genes$drug_targets) - sum(!is.na(genes$qbinom_gnomad100) & genes$qbinom_gnomad100 == 0 & genes$drug_targets)
-(sum(!is.na(genes$qbinom_gnomad100) & genes$drug_targets)  - sum(!is.na(genes$qbinom_gnomad100) & genes$qbinom_gnomad100 == 0 & genes$drug_targets))  / sum(!is.na(genes$qbinom_gnomad100) & genes$drug_targets) 
+roadmap_genes = genes[genes$roadmap_cat == 'gnomad_has',]
 
-# Indeed, for 38% of genes (N=7,546), even if all humans on Earth were sequenced, observing zero “knockouts” would still not be a statistically significant anomaly
-genes$qbinom_world = qbinom(p=corrected_threshold, size=world_population, prob=genes$p^2)
-sum(genes$qbinom_world == 0) # 7451
-sum(genes$qbinom_world == 0) / nrow(genes) # 38% of genes
-sum(genes$p^2 < 1/world_population) / nrow(genes) # how many genes have 0 expected on Earth
+outbred_roadmap = data.frame(size=outbred_sizes,
+                             exp2hit_count=integer(length(outbred_sizes)),
+                             exp2hit_percent=numeric(length(outbred_sizes)),
+                             inferleth_count=integer(length(outbred_sizes)),
+                             inferleth_percent=numeric(length(outbred_sizes)))
+for (i in 1:nrow(outbred_roadmap)) {
+  outbred_roadmap$exp2hit_count[i] = sum(roadmap_genes$p^2 > 1 / outbred_roadmap$size[i])
+  outbred_roadmap$exp2hit_percent[i] = outbred_roadmap$exp2hit_count[i]/sum(!is.na(roadmap_genes$p))
+  genes_qbinom = qbinom(p=corrected_threshold, size=outbred_roadmap$size[i], prob=roadmap_genes$p^2)
+  outbred_roadmap$inferleth_count[i] = sum(genes_qbinom > 0)
+  outbred_roadmap$inferleth_percent[i] = outbred_roadmap$inferleth_count[i] / sum(!is.na(genes_qbinom))
+}
 
-# end Figure 4-related stuff
+consang_roadmap = data.frame(size=consang_sizes,
+                             exp2hit_count=integer(length(consang_sizes)),
+                             exp2hit_percent=numeric(length(consang_sizes)),
+                             inferleth_count=integer(length(consang_sizes)),
+                             inferleth_percent=numeric(length(consang_sizes)))
+for (i in 1:nrow(consang_roadmap)) {
+  consang_roadmap$exp2hit_count[i] = sum((1-a)*(roadmap_genes$p ^ 2) + a*roadmap_genes$p > 1 / consang_roadmap$size[i])
+  consang_roadmap$exp2hit_percent[i] = consang_roadmap$exp2hit_count[i]/sum(!is.na(roadmap_genes$p))
+  genes_qbinom = qbinom(p=corrected_threshold, size=consang_roadmap$size[i], prob=(1-a)*(roadmap_genes$p ^ 2) + a*roadmap_genes$p)
+  consang_roadmap$inferleth_count[i] = sum(genes_qbinom > 0)
+  consang_roadmap$inferleth_percent[i] = consang_roadmap$inferleth_count[i] / sum(!is.na(genes_qbinom))
+}
+
+barplot(height=as.matrix(roadmap_stack$n),col=roadmap_stack$col,beside = F,xlim=c(0,10), border=NA, axes=F, xaxs='i', yaxs='i', ylim=c(0,20000))
+axis(side=1, at=c(-0.5,2), labels=NA, lwd=1, lwd.ticks=0)
+axis(side=2, at=c(0,5000,10000,15000,nrow(genes)),labels=c('0','5,000','10,000','15,000',formatC(nrow(genes),big.mark=',')),las=2,lwd=1,lwd.ticks=1)
+text(x=rep(1.1,nrow(roadmap_stack)), y=roadmap_stack$mid_y, labels=roadmap_stack$desc, col=roadmap_stack$col, pos=4)
+
+par(xpd=T)
+segments(x0=9.7,x1=10,y0=roadmap_stack$mid_y[4],col=roadmap_stack$col[4])
+segments(x0=c(10,10),x1=c(11,11),y0=rep(roadmap_stack$mid_y[4],2),y1=c(0,sum(roadmap_stack$n)),col=roadmap_stack$col[4])
+par(xpd=F)
+
+mtext('d', side=3, cex=2, adj = 0.0, line = 0.3)
+
+par(mar=c(6,4,3,4))
+plot(NA, NA, xlim=c(1e3, 1e10), ylim=c(0,1.05), xaxs='i', yaxs='i', axes=F, ann=F, log='x')
+xats_tempdf = expand.grid(1:9,10^(3:10))
+xats = xats_tempdf$Var1 * xats_tempdf$Var2
+xbigs = 10^(3:10)
+xbigs_labs = c('1K','10K','100K','1M','10M','100M','1B','10B')
+axis(side=1, at=xats, labels=NA, lwd=1, lwd.ticks=1, tck=-0.025)
+axis(side=1, at=xbigs, labels=xbigs_labs, lwd=0, lwd.ticks=1, tck=-0.05)
+#axis(side=1, at=c(world_consang_population,world_population), labels=NA, lwd=0, lwd.ticks=2, tck=-0.15)
+abline(v=c(world_consang_population,world_population), lwd=0.25)
+segments(x0=2912, y0=0, y1=consang_roadmap$exp2hit_percent[1], lwd=0.25)
+segments(x0=141456, y0=0, y1=outbred_roadmap$exp2hit_percent[1], lwd=0.25)
+par(xpd=T)
+axis(side=1, line=3, at=c(world_consang_population,world_population), labels=c('world\nconsanguineous\npopulation','world\npopulation\n'), lwd=0, lwd.ticks=0, cex.axis=0.8)
+axis(side=1, line=3, at=c(2912, 141456), labels=c('present\nconsanguineous\nsample size','present\ntotal\nsample size'), lwd=0, lwd.ticks=0, cex.axis=0.8)
+par(xpd=F)
+axis(side=2, at=c(0,5000,nrow(roadmap_genes))/nrow(roadmap_genes), labels=c('0','5,000',formatC(nrow(roadmap_genes),big.mark=',')), las=2)
+mtext(side=2, text='number of genes', line=3.5)
+axis(side=4, at=(0:4)/4, labels=percent((0:4)/4), las=2)
+corners = par("usr") # https://stackoverflow.com/a/42034961/3806692
+par(xpd = T) 
+text(x = corners[2]*10, y = mean(corners[3:4]), labels="proportion of genes", srt = 270)
+par(xpd = F)
+mtext(side=1, line=3, text='sample size')
+
+outbred_col = '#000000'
+consang_col = '#8B5A2B'
+
+points(outbred_roadmap$size, outbred_roadmap$exp2hit_percent, type='l', lwd=3, col=outbred_col, lty=1)
+points(outbred_roadmap$size, outbred_roadmap$inferleth_percent, type='l', lwd=3, col=outbred_col, lty=3)
+
+points(consang_roadmap$size, consang_roadmap$exp2hit_percent, type='l', lwd=3, col=consang_col, lty=1)
+points(consang_roadmap$size, consang_roadmap$inferleth_percent, type='l', lwd=3, col=consang_col, lty=3)
+
+#legend('topleft',lwd=c(3,3,3,3),lty=c(1,3,1,3),col=c(consang_col,consang_col,outbred_col,outbred_col),legend=c('2-hit LoF expected'))
+legend(x=1e3, y=1.05,pch=15,col=c(consang_col,outbred_col),legend=c('consanguineous','outbred'),bty='n')
+legend(x=1e3, y=.93,lwd=c(1,1),lty=c(1,3),col='#777777',legend=c('2-hit LoF expected\nif non-lethal\n','lethality inferrable\nif not observed\n'),bty='n')
+
+mtext('e', side=3, cex=2, adj = 0.0, line = 0.3)
+
+dev.off() ### -- End Figure 2
+
+# statistic for text:
+# "Even if every human on Earth were sequenced, there are 4,728 genes (25%) for which identification of even one two-hit individual would not be expected in an outbred population model"
+sum(genes$p ^ 2 < 1 / world_population)
 
 
 
-### Begin Figure 5
-png('figures/figure5.png',width=2400,height=2700,res=300)
+
+
+
+
+### Begin Figure 3
+png('figures/figure_3.png',width=2400,height=2700,res=300)
 
 par(mfrow=c(3,1), mar=c(5,4,3,2))
 
@@ -969,16 +1191,32 @@ obs_lof_144 / exp_lof_144
 # rbind everything for Table S2
 supptbl = rbind(htt_supptbl, mapt_supptbl, prnp_supptbl, snca_supptbl, sod1_supptbl)
 
+colnames(supptbl) = tolower(colnames(supptbl))
+
 # write out Table S2
 write.table(supptbl, 'data/output/table_s2.tsv',sep='\t',na='',row.names=F,col.names=T,quote=F)
+
+supptbl$loftee_flags[is.na(supptbl$loftee_flags)] = ''
+supptbl$loftee_flags[is.na(supptbl$loftee_flags)] = ''
+
+sqldf("
+select   gene,
+         count(*) n_unique_variants,
+         sum(allele_count) sum_ac, 
+         sum(case when filter_status != 'loftee' then allele_count else 0 end) sum_ac_loftee,
+         sum(case when filter_status == 'true' then allele_count else 0 end) sum_ac_curated
+from     supptbl
+group by 1
+order by 1
+;")
 
 # End Table 2 and Table S2 stuff
 
 
 
 
-### Begin Figure S1
-png('figures/figures1.png',width=2400,height=3600,res=500)
+### Begin Figure ED2
+png('figures/figure_ed2.png',width=2400,height=3600,res=500)
 
 par(mfrow=c(3,1))
 
@@ -1089,6 +1327,114 @@ text(x=log10(1/gnomad_consang),y=label_y,pos=3,labels='1\nconsanguineous\nin gno
 
 mtext('c', side=3, cex=2, adj = 0.0, line = 0.3)
 
+dev.off()
+
+
+
+
+png('figures/figure2-layer1.png',width=2400,height=1200,res=300)
+
+par(mfrow=c(1,1))
+par(mar=c(4,5,4,3))
+
+# decide on right histogram breaks for all plots
+lowest_p = min(genes$p[genes$p > 0])
+lowest_p ^ 2 # 1.58e-11
+# so the axis should break at 1e-11 or lower
+axis_break = 10^-11.9
+# confirm that the leftmost bin (<1e-10) is composed entirely of genes with 0 CAF, even for homs
+sum(genes$p^2 < 1e-11) == sum(genes$p == 0)
+# but the next bin this is not the case
+sum(genes$p^2 < 3.16e-11) == sum(genes$p == 0)
+
+caf_breaks = c(0,10^seq(-12,0,by=.5))
+n_bins = length(caf_breaks) - 1
+
+ymax = 6000
+label_y = 4500
+
+world_population = 7.66e9
+#gnomad = 141456 # defined above
+
+het_k = '#FF9912'
+hom_k = '#984EA3'
+
+het_hist = hist(2*genes$p*(1-genes$p), breaks=caf_breaks, plot=FALSE)
+hom_hist = hist(genes$p ^ 2, breaks=caf_breaks, plot=FALSE)
+
+plot(NA, NA, xlim=c(-13,0), ylim=c(0,ymax), ann=FALSE, axes=FALSE, xaxs='i', yaxs='i')
+axis(side=1, at=c(-13,-9,-6,-3,0), labels=c('','1 in 1 billion','1 in 1 million','1 in 1,000','100%'), tck=-0.03, lwd=1, lwd.ticks=1)
+axis(side=1, at=c(-12.3), labels=c('zero'), lwd=0, lwd.ticks=0)
+axis(side=1, at=-12:0, labels=NA, lwd=0, lwd.ticks=1, tck=-0.01)
+axis.break(axis=1,breakpos=log10(axis_break),style='zigzag')
+axis(side=2, at=(0:6)*1000, labels=formatC((0:6)*1000,big.mark=','),las=2)
+mtext(side=2, line=3.5, text='number of genes')
+rect(xleft=log10(het_hist$mids[1])-.25, xright=log10(het_hist$mids[1])+.25, ybottom=0, ytop=het_hist$counts[1], lwd=3, border=het_k, col=alpha(het_k,.2))
+points(log10(het_hist$mids[2:n_bins]), het_hist$counts[2:n_bins], type='l', lwd=3, col=het_k)
+polygon(x=c(log10(het_hist$mids[2:n_bins]),1), y=c(het_hist$counts[2:n_bins],0), border=NA, col=alpha(het_k,.2))
+#rect(xleft=log10(hom_hist$mids[1])-.25, xright=log10(hom_hist$mids[1])+.25, ybottom=0, ytop=hom_hist$counts[1], lwd=3, border=hom_k, col=alpha(hom_k,.2))
+#points(log10(hom_hist$mids[2:n_bins]), hom_hist$counts[2:n_bins], type='l', lwd=3, col=hom_k)
+#polygon(x=c(log10(hom_hist$mids[2:n_bins]),1), y=c(hom_hist$counts[2:n_bins],0), border=NA, col=alpha(hom_k,.2))
+segments(x0=log10(1/world_population),y0=0,y1=label_y,lwd=0.5)
+segments(x0=log10(1/gnomad),y0=0,y1=label_y,lwd=0.5)
+par(xpd=T)
+text(x=log10(1/world_population),y=label_y,pos=3,labels='1\non\nEarth')
+text(x=log10(1/gnomad),y=label_y,pos=3,labels='1\nin\ngnomAD')
+legend(x=-4,y=7500,legend=c('heterozygotes'),text.col=c(het_k),border=c(het_k),fill=alpha(c(het_k),.2),bty='n',cex=1.2)
+par(xpd=F)
+dev.off()
+
+
+png('figures/figure2-layer2.png',width=2400,height=1200,res=300)
+
+par(mfrow=c(1,1))
+par(mar=c(4,5,4,3))
+
+# decide on right histogram breaks for all plots
+lowest_p = min(genes$p[genes$p > 0])
+lowest_p ^ 2 # 1.58e-11
+# so the axis should break at 1e-11 or lower
+axis_break = 10^-11.9
+# confirm that the leftmost bin (<1e-10) is composed entirely of genes with 0 CAF, even for homs
+sum(genes$p^2 < 1e-11) == sum(genes$p == 0)
+# but the next bin this is not the case
+sum(genes$p^2 < 3.16e-11) == sum(genes$p == 0)
+
+caf_breaks = c(0,10^seq(-12,0,by=.5))
+n_bins = length(caf_breaks) - 1
+
+ymax = 6000
+label_y = 4500
+
+world_population = 7.66e9
+#gnomad = 141456 # defined above
+
+het_k = '#FF9912'
+hom_k = '#984EA3'
+
+het_hist = hist(2*genes$p*(1-genes$p), breaks=caf_breaks, plot=FALSE)
+hom_hist = hist(genes$p ^ 2, breaks=caf_breaks, plot=FALSE)
+
+plot(NA, NA, xlim=c(-13,0), ylim=c(0,ymax), ann=FALSE, axes=FALSE, xaxs='i', yaxs='i')
+axis(side=1, at=c(-13,-9,-6,-3,0), labels=c('','1 in 1 billion','1 in 1 million','1 in 1,000','100%'), tck=-0.03, lwd=1, lwd.ticks=1)
+axis(side=1, at=c(-12.3), labels=c('zero'), lwd=0, lwd.ticks=0)
+axis(side=1, at=-12:0, labels=NA, lwd=0, lwd.ticks=1, tck=-0.01)
+axis.break(axis=1,breakpos=log10(axis_break),style='zigzag')
+axis(side=2, at=(0:6)*1000, labels=formatC((0:6)*1000,big.mark=','),las=2)
+mtext(side=2, line=3.5, text='number of genes')
+rect(xleft=log10(het_hist$mids[1])-.25, xright=log10(het_hist$mids[1])+.25, ybottom=0, ytop=het_hist$counts[1], lwd=3, border=het_k, col=alpha(het_k,.2))
+points(log10(het_hist$mids[2:n_bins]), het_hist$counts[2:n_bins], type='l', lwd=3, col=het_k)
+polygon(x=c(log10(het_hist$mids[2:n_bins]),1), y=c(het_hist$counts[2:n_bins],0), border=NA, col=alpha(het_k,.2))
+rect(xleft=log10(hom_hist$mids[1])-.25, xright=log10(hom_hist$mids[1])+.25, ybottom=0, ytop=hom_hist$counts[1], lwd=3, border=hom_k, col=alpha(hom_k,.2))
+points(log10(hom_hist$mids[2:n_bins]), hom_hist$counts[2:n_bins], type='l', lwd=3, col=hom_k)
+polygon(x=c(log10(hom_hist$mids[2:n_bins]),1), y=c(hom_hist$counts[2:n_bins],0), border=NA, col=alpha(hom_k,.2))
+segments(x0=log10(1/world_population),y0=0,y1=label_y,lwd=0.5)
+segments(x0=log10(1/gnomad),y0=0,y1=label_y,lwd=0.5)
+par(xpd=T)
+text(x=log10(1/world_population),y=label_y,pos=3,labels='1\non\nEarth')
+text(x=log10(1/gnomad),y=label_y,pos=3,labels='1\nin\ngnomAD')
+legend(x=-4,y=7500,legend=c('heterozygotes','homozygotes &\ncompound hets'),text.col=c(het_k,hom_k),border=c(het_k,hom_k),fill=alpha(c(het_k,hom_k),.2),bty='n',cex=1.2)
+par(xpd=F)
 dev.off()
 
 
