@@ -7,7 +7,7 @@ library(plotrix)
 source('~/d/sci/src/exac_2015/exac_constants.R') # https://github.com/macarthur-lab/exac_2015/blob/master/exac_constants.R
 
 # constants
-gnomad = 141456
+# gnomad = 141456
 
 # generally useful functions
 alpha = function(rgb_hexcolor, proportion) {
@@ -81,6 +81,9 @@ colnames(hgnc_ensembl)[c(2,9)] = c('symbol','ensg')
 #tissues$ensg = gsub('\\..*','',tissues$gene_id)
 tissues$symbol = hgnc_ensembl$symbol[match(tissues$ensg,hgnc_ensembl$ensg)]
 
+# homozygous lof dataset
+homlof = read.table('data/homlof/homlof_genes_summary.tsv',sep='\t',header=T)
+
 # merge all datasets into one "genes" table to make sure we have the same denominator for everything,
 # no confounders due to missing values, etc.
 genes = universe
@@ -118,6 +121,7 @@ genes$ptile_medtpm = rank(genes$medtpm, na.last='keep')/sum(!is.na(genes$medtpm)
 genes$topquartile_medtpm = genes$ptile_medtpm > .75
 genes$botquartile_medtpm = genes$ptile_medtpm < .25
 genes$interquartile_medtpm = genes$ptile_medtpm >= .25 & genes$ptile_medtpm <= .75
+genes$homlof = homlof$any[match(genes$symbol,homlof$gene)]
 
 # read in gene lists
 list_of_lists = read.table(textConnection("
@@ -587,8 +591,15 @@ sum(genes$drug_targets & genes$mo_het_lethal)
 sum(genes$negative_targets & genes$mo_het_lethal)
 genes$symbol[genes$negative_targets & genes$mo_het_lethal]
 
+# sanity checks
+sum(genes$negative_targets & !genes$drug_targets)
+sum(genes$positive_targets & !genes$drug_targets)
+sum(genes$other_targets & !genes$drug_targets)
 
-
+# how many targets are cell culture essential?
+sum(genes$drug_targets & genes$CEGv2_subset_universe)
+sum(genes$negative_targets & genes$CEGv2_subset_universe)
+genes$symbol[genes$negative_targets & genes$CEGv2_subset_universe]
 
 
 
@@ -717,17 +728,20 @@ par(xpd=F)
 
 mtext('c', side=3, cex=2, adj = 0.0, line = 0.3)
 
+genes$homlof_gnomad = homlof$karcewski2019[match(genes$symbol,homlof$gene)]
+
 # construct the "roadmap" categories for Figure 2
 genes$pli = gstraint$pLI[match(genes$symbol,gstraint$gene)]
 genes$roadmap_cat = ''
 genes$roadmap_cat[genes$omim_genes] = 'omim'
+genes$roadmap_cat[genes$roadmap_cat=='' & genes$homlof] = 'hom_lof'
 genes$roadmap_cat[genes$roadmap_cat=='' & genes$pli > 0.9] = 'high_pli'
 genes$roadmap_cat[genes$roadmap_cat=='' & genes$p==0] = 'gnomad_none'
 genes$roadmap_cat[genes$roadmap_cat=='' & genes$p > 0] = 'gnomad_has'
 
-roadmap_stack = data.frame(cat=c('omim','high_pli','gnomad_none','gnomad_has'),
-                           desc=c('human disease\nassociation known*','likely haploinsufficient','pLoF not yet observed','pLoF observed in gnomAD'),
-                           col=c('#2E0854','#283A90','#5993E5','#458B00'))
+roadmap_stack = data.frame(cat=c('omim','hom_lof','high_pli','gnomad_none','gnomad_has'),
+                           desc=c('human disease\nassociation known*','2-hit pLoF reported','likely haploinsufficient','pLoF not yet observed','pLoF observed in gnomAD'),
+                           col=c('#2E0854','#AE017E','#283A90','#5993E5','#458B00'))
 for (i in 1:nrow(roadmap_stack)) {
   roadmap_stack$n[i] = sum(genes$roadmap_cat==roadmap_stack$cat[i])
 }
@@ -779,8 +793,9 @@ axis(side=2, at=c(0,5000,10000,15000,nrow(genes)),labels=c('0','5,000','10,000',
 text(x=rep(1.1,nrow(roadmap_stack)), y=roadmap_stack$mid_y, labels=roadmap_stack$desc, col=roadmap_stack$col, pos=4)
 
 par(xpd=T)
-segments(x0=9.7,x1=10,y0=roadmap_stack$mid_y[4],col=roadmap_stack$col[4])
-segments(x0=c(10,10),x1=c(11,11),y0=rep(roadmap_stack$mid_y[4],2),y1=c(0,sum(roadmap_stack$n)),col=roadmap_stack$col[4])
+index_plof_obs = which(roadmap_stack$cat=='gnomad_has')
+segments(x0=9.7,x1=10,y0=roadmap_stack$mid_y[index_plof_obs],col=roadmap_stack$col[index_plof_obs])
+segments(x0=c(10,10),x1=c(11,11),y0=rep(roadmap_stack$mid_y[index_plof_obs],2),y1=c(0,sum(roadmap_stack$n)),col=roadmap_stack$col[index_plof_obs])
 par(xpd=F)
 
 mtext('d', side=3, cex=2, adj = 0.0, line = 0.3)
@@ -831,11 +846,16 @@ dev.off() ### -- End Figure 2
 # "Even if every human on Earth were sequenced, there are 4,728 genes (25%) for which identification of even one two-hit individual would not be expected in an outbred population model"
 sum(genes$p ^ 2 < 1 / world_population)
 
+sum(genes$p > 0)
+sum(genes$p > 0) / sum(!is.na(genes$p))
 
+genes$obs_hom_lof = cafall$obs_hom_lof[match(genes$symbol,cafall$gene)]
+genes$obs_hom_lof[is.na(genes$obs_hom_lof)] = 0
+sum(genes$obs_hom_lof > 0)
+sum(genes$obs_hom_lof > 0) / sum(!is.na(genes$obs_hom_lof))
 
-
-
-
+nrow(roadmap_genes) - outbred_roadmap$exp2hit_count[nrow(outbred_roadmap)]
+(nrow(roadmap_genes) - outbred_roadmap$exp2hit_count[nrow(outbred_roadmap)])/roadmap_stack$n[nrow(roadmap_stack)]
 
 ### Begin Figure 3
 png('figures/figure_3.png',width=2400,height=2700,res=300)
