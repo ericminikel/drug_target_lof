@@ -24,6 +24,15 @@ update_symbols = function(old_symbols, remove_na = F) {
   }
 }
 
+hgnc_ensembl = read.table('data/expression/hgnc_ensembl_mapping.tsv',sep='\t',header=T,quote='',comment.char='')
+colnames(hgnc_ensembl)[c(2,9)] = c('symbol','ensg')
+
+# gnomad constraint table
+if (!('gstraint' %in% ls())) {
+  gstraint_all = read.table('data/constraint/constraint.txt.bgz',sep='\t',header=T) # read.table natively handles bgzipped files : ) 
+  # save gstraint_all table for transcript-specific lookup later on
+}
+
 
 atc = read.table('data/annotation/atc_summary.tsv',sep='\t',header=T)
 dg = read.table('data/drugbank/drug_gene_match.tsv',sep='\t',header=T)
@@ -80,6 +89,7 @@ length(omim_unfiltered)
 # remove questionable and bracketed associations
 omim_morbidmap$questionable = grepl("^[\\?\\{\\[]", omim_morbidmap$phenotype)
 # remove drug response associations
+omim_morbidmap$susceptibility = grepl('[Ss]usceptibility',omim_morbidmap$phenotype)
 omim_morbidmap$response = grepl('[Rr]esponse to',omim_morbidmap$phenotype)
 # remove somatic associations
 omim_morbidmap$somatic = grepl('[Ss]omatic',omim_morbidmap$phenotype)
@@ -88,7 +98,7 @@ omim_morbidmap$somatic = grepl('[Ss]omatic',omim_morbidmap$phenotype)
 # need to extract specifically the phenotype mim from the phenotype field and filter on that
 omim_morbidmap$phenotype_mim = as.integer(substring(omim_morbidmap$phenotype, regexpr("[0-9]{6}", omim_morbidmap$phenotype), regexpr("[0-9]{6}", omim_morbidmap$phenotype) + 6))
 
-omim_morbidmap_valid = subset(omim_morbidmap, !questionable & !response & !somatic & !is.na(phenotype_mim))
+omim_morbidmap_valid = subset(omim_morbidmap, !questionable & !response & !somatic & !susceptibility & !is.na(phenotype_mim))
 
 # check that this has removed all the "susceptibility" things
 sum(grepl('susceptibility',omim_morbidmap$phenotype))

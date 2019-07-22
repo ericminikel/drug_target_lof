@@ -1,10 +1,9 @@
-# UKBB - DeBoever 2018 https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5915386/
-
-# Narasimhan 2016 - see p. 32-33 Table S1 of supplement
-
 options(stringsAsFactors=F)
+if(interactive()) {
+  setwd('~/d/sci/src/drug_target_lof')
+}
 library(readxl)
-
+library(sqldf)
 
 
 # HGNC gene symbol mapping table for updating outdated gene symbols
@@ -79,8 +78,9 @@ sum(homlof_genes$saleheen2017 | homlof_genes$sulem2015)
 # DeBoever 2018 Table S1 UKBB data
 deboever2018 = read_xlsx('data/homlof/deboever-2018-table-s1-41467_2018_3910_MOESM4_ESM.xlsx',sheet = 'ko_genes')
 colnames(deboever2018) = gsub('[^a-z0-9_]','_',tolower(colnames(deboever2018)))
+colnames(deboever2018)[1] = 'gene'
 deboever2018_include = sqldf("
-select   x__1 gene
+select   gene
 from     deboever2018
 where    uk_biobank__maf___1__ -- require rare - MAF < 1%
 ;")
@@ -90,20 +90,29 @@ sum(homlof_genes$deboever2018)
 sum(homlof_genes$deboever2018 | homlof_genes$saleheen2017 | homlof_genes$sulem2015)
 
 # Narasimhan 2016 Table S1 ELGH data - temp until we get updated ELGH data
-narasimhan2016 = read.table('data/homlof/narasimhan-2016-table-s1-genes.tsv',sep='\t',header=F)
-narasimhan2016_genes = sort(unique(update_symbols(narasimhan2016$V1, remove_na=T)))
-homlof_genes$narasimhan2016 = homlof_genes$gene %in% narasimhan2016_genes
-sum(homlof_genes$narasimhan2016)
-sum(homlof_genes$narasimhan2016 | homlof_genes$deboever2018 | homlof_genes$saleheen2017 | homlof_genes$sulem2015)
+# narasimhan2016 = read.table('data/homlof/narasimhan-2016-table-s1-genes.tsv',sep='\t',header=F)
+# narasimhan2016_genes = sort(unique(update_symbols(narasimhan2016$V1, remove_na=T)))
+# homlof_genes$narasimhan2016 = homlof_genes$gene %in% narasimhan2016_genes
+# sum(homlof_genes$narasimhan2016)
+# sum(homlof_genes$narasimhan2016 | homlof_genes$deboever2018 | homlof_genes$saleheen2017 | homlof_genes$sulem2015)
+
+elgh = read.table('data/homlof/genes_with_homozygous_LoFs_MAF_0.01_in_ROHs_after_genotype_filtering.canonical_transcripts_only.ELGH_BiB_Birm_new_callset_N_8925.txt',sep='\t',header=F)
+elgh_genes = sort(unique(update_symbols(elgh$V1, remove_na=T)))
+homlof_genes$elgh = homlof_genes$gene %in% elgh_genes
+sum(homlof_genes$elgh)
+sum(homlof_genes$elgh | homlof_genes$deboever2018 | homlof_genes$saleheen2017 | homlof_genes$sulem2015)
 
 # Karcewski 2019 curated gnomAD hom LoF gene set
 karcewski2019 = read.table('data/homlof/gnomad_hom_ko_genes_2019-07-01.txt',sep='\t',header=F)
 karcewski2019_genes = sort(unique(update_symbols(karcewski2019$V1, remove_na=T)))
 homlof_genes$karcewski2019 = homlof_genes$gene %in% karcewski2019_genes
 sum(homlof_genes$karcewski2019)
-sum(homlof_genes$karcewski2019 | homlof_genes$narasimhan2016 | homlof_genes$deboever2018 | homlof_genes$saleheen2017 | homlof_genes$sulem2015)
 
-homlof_genes$any = homlof_genes$karcewski2019 | homlof_genes$narasimhan2016 | homlof_genes$deboever2018 | homlof_genes$saleheen2017 | homlof_genes$sulem2015
+homlof_genes$any = homlof_genes$karcewski2019 | homlof_genes$elgh | homlof_genes$deboever2018 | homlof_genes$saleheen2017 | homlof_genes$sulem2015
+
+sum(homlof_genes$any)
+
+sum(homlof_genes$elgh & !(homlof_genes$karcewski2019 | homlof_genes$deboever2018 | homlof_genes$saleheen2017 | homlof_genes$sulem2015))
 
 summary(homlof_genes)
 

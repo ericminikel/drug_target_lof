@@ -205,7 +205,7 @@ axis(side=2,at=(0:2)*100,las=2)
 abline(a=0,b=1)
 mtext(side=3,line=1,text='pLoF',font=2,cex=1,col=k_lof)
 mtext('c', side=3, cex=2.0, adj = -0.1, line = 0.3)
-dev.off() ### -- End Figure 1
+dev.off() ### -- End Figure 0
 
 
 # Set up for figure 1 forest plot
