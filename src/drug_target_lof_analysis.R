@@ -7,7 +7,7 @@ library(plotrix)
 source('~/d/sci/src/exac_2015/exac_constants.R') # https://github.com/macarthur-lab/exac_2015/blob/master/exac_constants.R
 
 # constants
-# gnomad = 141456
+gnomad = 141456
 
 # generally useful functions
 alpha = function(rgb_hexcolor, proportion) {
@@ -34,6 +34,13 @@ tla_to_ola = function(x) {
   return (x)
 }
 
+# https://www.nature.com/nature/for-authors/final-submission
+# For guidance, Nature's standard figure sizes are 89 mm wide (single column) 
+# and 183 mm wide (double column). The full depth of a Nature page is 247 mm.
+mm_per_inch = 25.4
+nature_col_width = 89 / mm_per_inch
+nature_page_height = 247 / mm_per_inch
+# scale = 2 # make figures 2x as large in linear dimensions (not doing this for now)
 
 ### begin reading in datasets
 
@@ -179,7 +186,7 @@ dcats = read.table('data/drugbank/drug_categories.tsv',sep='\t',header=T)
 non_ttn = genes$symbol != 'TTN'
 
 ### Begin Figure 0 - won't go in revised paper but may be useful for presentations etc.
-png('figures/figure_0.png',width=2400,height=900,res=300)
+pdf('figures/figure_0.pdf',width=8,height=3)
 par(mfrow=c(1,3))
 plot(genes$exp_syn[non_ttn], genes$obs_syn[non_ttn], xaxs='i', yaxs='i', xlim=c(0,1000), ylim=c(0,1000), pch=20, cex=0.5, col=alpha(k_syn,0.2), xlab='expected', ylab='observed', yaxt='n', xaxt='n')
 m = lm(obs_syn ~ exp_syn + 0, data=genes[non_ttn,])
@@ -257,7 +264,7 @@ lof_oe$color[lof_oe$filename=='universe'] = '#000000'
 lof_oe$color[lof_oe$filename %in% c('drug_targets')] = '#2E37FE'
 
 ### Begin Figure 1
-png('figures/figure_1.png',width=1800,height=2400,res=300)
+pdf('figures/figure_1.pdf',width=6,height=8)
 layout(matrix(c(1,2,2,2),byrow=T,nrow=4))
 
 # Panel A: histogram
@@ -448,7 +455,7 @@ for (i in 1:dim(forest2)[1]) {
 forest2$y = -1:(-1*dim(forest2)[1])
 
 ### Begin Figure ED1
-png('figures/figure_ed1.png',width=3600,height=1600,res=300)
+pdf('figures/figure_ed1.pdf',width=12,height=5.3)
 
 layout_matrix = matrix(c(1,1,1,2,2,3,
                          1,1,1,2,2,4,
@@ -603,12 +610,20 @@ genes$symbol[genes$negative_targets & genes$CEGv2_subset_universe]
 
 
 
+
+
+
+
+
+
+
+
 ### Begin Figure 2 - prospects for ascertaining LoF individuals
 
-png('figures/figure_2.png',width=2400,height=2400,res=300)
+pdf('figures/figure_2.pdf',width=nature_col_width,height=nature_page_height*0.5)
 
 layout_matrix = matrix(c(1,1,1,2,2,2,3,3,3,4,5,5),nrow=4,byrow=T)
-layout(layout_matrix, heights=c(1,1,1,1.75))
+layout(layout_matrix, heights=c(1,1,1,2))
 
 # decide on right histogram breaks for all plots
 lowest_p = min(genes$p[genes$p > 0])
@@ -635,14 +650,15 @@ hom_k = '#984EA3'
 het_hist = hist(2*genes$p*(1-genes$p), breaks=caf_breaks, plot=FALSE)
 hom_hist = hist(genes$p ^ 2, breaks=caf_breaks, plot=FALSE)
 
-par(mar=c(2,5,4,3))
+par(mar=c(1,3,3,1))
 plot(NA, NA, xlim=c(-13,0), ylim=c(0,ymax), ann=FALSE, axes=FALSE, xaxs='i', yaxs='i')
-axis(side=1, at=c(-13,-9,-6,-3,0), labels=c('','1 in 1 billion','1 in 1 million','1 in 1,000','100%'), tck=-0.03, lwd=1, lwd.ticks=1)
-axis(side=1, at=c(-12.3), labels=c('zero'), lwd=0, lwd.ticks=0)
-axis(side=1, at=-12:0, labels=NA, lwd=0, lwd.ticks=1, tck=-0.01)
-axis.break(axis=1,breakpos=log10(axis_break),style='zigzag')
-axis(side=2, at=(0:6)*1000, labels=formatC((0:6)*1000,big.mark=','),las=2)
-mtext(side=2, line=3.5, text='number of genes')
+axis(side=1, at=c(-13,-9,-6,-3,0), labels=NA, tck=-0.2, lwd=1, lwd.ticks=1, cex.axis=0.7, line=0)
+#axis(side=1, at=c(-13,-9,-6,-3,0), labels=c('','1 in 1 billion','1 in 1 million','1 in 1,000','100%'), lwd=0, lwd.ticks=0, cex.axis=0.7, line=-0.5)
+#axis(side=1, at=c(-12.3), labels=c('zero'), lwd=0, lwd.ticks=0, cex.axis=0.7, line=-0.5)
+axis(side=1, at=-12:0, labels=NA, lwd=0, lwd.ticks=1, tck=-0.1)
+axis.break(axis=1,breakpos=log10(axis_break),style='slash',brw = 0.05)
+axis(side=2, at=(0:6)*1000, labels=c('0',paste0(1:6,'K')),las=2, cex.axis=0.7, line=0)
+mtext(side=2, line=2.0, text='genes', cex=0.7)
 rect(xleft=log10(het_hist$mids[1])-.25, xright=log10(het_hist$mids[1])+.25, ybottom=0, ytop=het_hist$counts[1], lwd=3, border=het_k, col=alpha(het_k,.2))
 points(log10(het_hist$mids[2:n_bins]), het_hist$counts[2:n_bins], type='l', lwd=3, col=het_k)
 polygon(x=c(log10(het_hist$mids[2:n_bins]),1), y=c(het_hist$counts[2:n_bins],0), border=NA, col=alpha(het_k,.2))
@@ -652,12 +668,12 @@ polygon(x=c(log10(hom_hist$mids[2:n_bins]),1), y=c(hom_hist$counts[2:n_bins],0),
 par(xpd=T)
 segments(x0=log10(1/world_population),y0=0,y1=label_y,lwd=0.5)
 segments(x0=log10(1/gnomad),y0=0,y1=label_y,lwd=0.5)
-text(x=log10(1/world_population),y=label_y,pos=3,labels='1\non\nEarth')
-text(x=log10(1/gnomad),y=label_y,pos=3,labels='1\nin\ngnomAD')
-legend(x=-3,y=7500,legend=c('heterozygotes','homozygotes &\ncompound hets'),text.col=c(het_k,hom_k),border=c(het_k,hom_k),fill=alpha(c(het_k,hom_k),.2),bty='n',cex=1.2)
+text(x=log10(1/world_population),y=label_y,pos=3,labels='1 on\nEarth',cex=0.7)
+text(x=log10(1/gnomad),y=label_y,pos=3,labels='1 in\ngnomAD',cex=0.7)
+legend(x=-4,y=11000,legend=c('heterozygotes','homozygotes &\ncompound hets'),text.col=c(het_k,hom_k),border=c(het_k,hom_k),fill=alpha(c(het_k,hom_k),.2),bty='n',cex=0.7)
 par(xpd=F)
 
-mtext('a', side=3, cex=2, adj = 0.0, line = 0.3)
+mtext('a', side=3, cex=1.4, adj = 0.0, line = 0.3)
 
 
 
@@ -667,17 +683,16 @@ gnomad_finns = 12526
 het_hist = hist(2*genes$p_fin*(1-genes$p_fin), breaks=caf_breaks, plot=FALSE)
 hom_hist = hist(genes$p_fin ^ 2, breaks=caf_breaks, plot=FALSE)
 
-par(mar=c(3,5,3,3))
-
+par(mar=c(2,3,2,1))
 plot(NA, NA, xlim=c(-13,0), ylim=c(0,ymax), ann=FALSE, axes=FALSE, xaxs='i', yaxs='i')
-axis(side=1, at=c(-13,-9,-6,-3,0), labels=c('','1 in 1 billion','1 in 1 million','1 in 1,000','100%'), tck=-0.03, lwd=1, lwd.ticks=1)
-axis(side=1, at=c(-12.3), labels=c('zero'), lwd=0, lwd.ticks=0)
-axis(side=1, at=-12:0, labels=NA, lwd=0, lwd.ticks=1, tck=-0.01)
-axis.break(axis=1,breakpos=log10(axis_break),style='zigzag')
-#mtext(side=1, line=2.5, text='expected frequency of pLoF individuals in population')
-axis(side=2, at=(0:6)*1000, labels=formatC(c((0:5)*1000,het_hist$counts[1]),big.mark=',',format='fg'),las=2,lwd=1)
-axis.break(axis=2,breakpos=5500,style='zigzag')
-mtext(side=2, line=3.5, text='number of genes')
+axis(side=1, at=c(-13,-9,-6,-3,0), labels=NA, tck=-0.2, lwd=1, lwd.ticks=1, cex.axis=0.7, line=0)
+#axis(side=1, at=c(-13,-9,-6,-3,0), labels=c('','1 in 1 billion','1 in 1 million','1 in 1,000','100%'), lwd=0, lwd.ticks=0, cex.axis=0.7, line=-0.5)
+#axis(side=1, at=c(-12.3), labels=c('zero'), lwd=0, lwd.ticks=0, cex.axis=0.7, line=-0.5)
+axis(side=1, at=-12:0, labels=NA, lwd=0, lwd.ticks=1, tck=-0.1)
+axis.break(axis=1,breakpos=log10(axis_break),style='slash',brw = 0.05)
+axis(side=2, at=(0:6)*1000, labels=c('0',paste0(1:5,'K'),paste0(round(het_hist$counts[1]/1000,digits=1),'K')),las=2, cex.axis=0.7, line=0)
+mtext(side=2, line=2.0, text='genes', cex=0.7)
+axis.break(axis=2,breakpos=5500,style='slash',brw=0.02)
 rect(xleft=log10(het_hist$mids[1])-.25, xright=log10(het_hist$mids[1])+.25, ybottom=0, ytop=min(het_hist$counts[1],ymax), lwd=3, border=het_k, col=alpha(het_k,.2))
 points(log10(het_hist$mids[2:n_bins]), het_hist$counts[2:n_bins], type='l', lwd=3, col=het_k)
 polygon(x=c(log10(het_hist$mids[2:n_bins]),1), y=c(het_hist$counts[2:n_bins],0), border=NA, col=alpha(het_k,.2))
@@ -687,11 +702,11 @@ polygon(x=c(log10(hom_hist$mids[2:n_bins]),1), y=c(hom_hist$counts[2:n_bins],0),
 par(xpd=T)
 segments(x0=log10(1/finland_population),y0=0,y1=label_y,lwd=0.5)
 segments(x0=log10(1/gnomad_finns),y0=0,y1=label_y,lwd=0.5)
-text(x=log10(1/finland_population),y=label_y,pos=3,labels='1\nin\nFinland')
-text(x=log10(1/gnomad_finns),y=label_y,pos=3,labels='1\nin\ngnomAD Finns')
+text(x=log10(1/finland_population),y=label_y,pos=3,labels='1 in\nFinland',cex=0.7)
+text(x=log10(1/gnomad_finns),y=label_y,pos=3,labels='1 in\ngnomAD Finns',cex=0.7)
 par(xpd=F)
 
-mtext('b', side=3, cex=2, adj = 0.0, line = 0.3)
+mtext('b', side=3, cex=1.4, adj = 0.0, line = 0.3)
 
 
 
@@ -703,16 +718,15 @@ hom_hist = hist((1-a)*(genes$p ^ 2) + a*genes$p, breaks=caf_breaks, plot=FALSE)
 world_consang_population = world_population * .104 # Bittles & Black 2009 PNAS
 gnomad_consang = 2912 # SAS w/ F > 0.05 according to Konrad on 2018-12-04 via Slack
 
-par(mar=c(4,5,2,3))
-
+par(mar=c(3,3,1,1))
 plot(NA, NA, xlim=c(-13,0), ylim=c(0,ymax), ann=FALSE, axes=FALSE, xaxs='i', yaxs='i')
-axis(side=1, at=c(-13,-9,-6,-3,0), labels=c('','1 in 1 billion','1 in 1 million','1 in 1,000','100%'), tck=-0.03, lwd=1, lwd.ticks=1)
-axis(side=1, at=c(-12.3), labels=c('zero'), lwd=0, lwd.ticks=0)
-axis(side=1, at=-12:0, labels=NA, lwd=0, lwd.ticks=1, tck=-0.01)
-axis.break(axis=1,breakpos=log10(axis_break),style='zigzag')
-mtext(side=1, line=2.5, text='expected frequency of pLoF individuals in population')
-axis(side=2, at=(0:6)*1000, labels=formatC((0:6)*1000,big.mark=','),las=2)
-mtext(side=2, line=3.5, text='number of genes')
+axis(side=1, at=c(-13,-9,-6,-3,0), labels=NA, tck=-0.2, lwd=1, lwd.ticks=1, cex.axis=0.7, line=0)
+axis(side=1, at=c(-13,-9,-6,-3,0), labels=c('','1 in 1 billion','1 in 1 million','1 in 1,000','100%'), lwd=0, lwd.ticks=0, cex.axis=0.7, line=-0.5)
+axis(side=1, at=c(-12.3), labels=c('zero'), lwd=0, lwd.ticks=0, cex.axis=0.7, line=-0.5)
+axis(side=1, at=-12:0, labels=NA, lwd=0, lwd.ticks=1, tck=-0.1)
+axis.break(axis=1,breakpos=log10(axis_break),style='slash',brw = 0.05)
+axis(side=2, at=(0:6)*1000, labels=c('0',paste0(1:6,'K')),las=2, cex.axis=0.7, line=0)
+mtext(side=2, line=2.0, text='genes', cex=0.7)
 rect(xleft=log10(het_hist$mids[1])-.25, xright=log10(het_hist$mids[1])+.25, ybottom=0, ytop=het_hist$counts[1], lwd=3, border=het_k, col=alpha(het_k,.2))
 points(log10(het_hist$mids[2:n_bins]), het_hist$counts[2:n_bins], type='l', lwd=3, col=het_k)
 polygon(x=c(log10(het_hist$mids[2:n_bins]),1), y=c(het_hist$counts[2:n_bins],0), border=NA, col=alpha(het_k,.2))
@@ -722,11 +736,11 @@ polygon(x=c(log10(hom_hist$mids[2:n_bins]),1), y=c(hom_hist$counts[2:n_bins],0),
 par(xpd=T)
 segments(x0=log10(1/world_consang_population),y0=0,y1=label_y,lwd=0.5)
 segments(x0=log10(1/gnomad_consang),y0=0,y1=label_y,lwd=0.5)
-text(x=log10(1/world_consang_population),y=label_y,pos=3,labels='1\nconsanguineous\nworldwide')
-text(x=log10(1/gnomad_consang),y=label_y,pos=3,labels='1\nconsanguineous\nin gnomAD')
+text(x=log10(1/world_consang_population),y=label_y,pos=3,labels='1 consanguineous\nworldwide',cex=0.7)
+text(x=log10(1/gnomad_consang),y=label_y,pos=3,labels='1 consanguineous\nin gnomAD',cex=0.7)
 par(xpd=F)
 
-mtext('c', side=3, cex=2, adj = 0.0, line = 0.3)
+mtext('c', side=3, cex=1.4, adj = 0.0, line = 0.3)
 
 genes$homlof_gnomad = homlof$karcewski2019[match(genes$symbol,homlof$gene)]
 
@@ -740,7 +754,7 @@ genes$roadmap_cat[genes$roadmap_cat=='' & genes$p==0] = 'gnomad_none'
 genes$roadmap_cat[genes$roadmap_cat=='' & genes$p > 0] = 'gnomad_has'
 
 roadmap_stack = data.frame(cat=c('omim','hom_lof','high_pli','gnomad_none','gnomad_has'),
-                           desc=c('human disease\nassociation known*','2-hit pLoF reported','likely haploinsufficient','pLoF not yet observed','pLoF observed in gnomAD'),
+                           desc=c('human disease\nassociation known*','2-hit pLoF\nreported','likely\nhaploinsufficient','pLoF not yet\nobserved','pLoF observed\nin gnomAD'),
                            col=c('#2E0854','#AE017E','#283A90','#5993E5','#458B00'))
 for (i in 1:nrow(roadmap_stack)) {
   roadmap_stack$n[i] = sum(genes$roadmap_cat==roadmap_stack$cat[i])
@@ -787,43 +801,48 @@ for (i in 1:nrow(consang_roadmap)) {
   consang_roadmap$inferleth_percent[i] = consang_roadmap$inferleth_count[i] / sum(!is.na(genes_qbinom))
 }
 
+par(mar=c(2,3,1.5,0.5))
 barplot(height=as.matrix(roadmap_stack$n),col=roadmap_stack$col,beside = F,xlim=c(0,10), border=NA, axes=F, xaxs='i', yaxs='i', ylim=c(0,20000))
 axis(side=1, at=c(-0.5,2), labels=NA, lwd=1, lwd.ticks=0)
-axis(side=2, at=c(0,5000,10000,15000,nrow(genes)),labels=c('0','5,000','10,000','15,000',formatC(nrow(genes),big.mark=',')),las=2,lwd=1,lwd.ticks=1)
-text(x=rep(1.1,nrow(roadmap_stack)), y=roadmap_stack$mid_y, labels=roadmap_stack$desc, col=roadmap_stack$col, pos=4)
+axis(side=2, at=0:4*5000,labels=c('0',paste0(1:4*5,'K')),las=2,lwd=1,lwd.ticks=1,cex.axis=0.7)
+mtext(side=2, line=2, cex=0.7, text='genes')
+text(x=rep(1.1,nrow(roadmap_stack)), y=roadmap_stack$mid_y, labels=roadmap_stack$desc, col=roadmap_stack$col, pos=4, cex=0.65)
 
 par(xpd=T)
 index_plof_obs = which(roadmap_stack$cat=='gnomad_has')
-segments(x0=9.7,x1=10,y0=roadmap_stack$mid_y[index_plof_obs],col=roadmap_stack$col[index_plof_obs])
-segments(x0=c(10,10),x1=c(11,11),y0=rep(roadmap_stack$mid_y[index_plof_obs],2),y1=c(0,sum(roadmap_stack$n)),col=roadmap_stack$col[index_plof_obs])
+segments(x0=8,x1=9,y0=roadmap_stack$mid_y[index_plof_obs],col=roadmap_stack$col[index_plof_obs])
+segments(x0=c(9,9),x1=c(10.5,10.5),y0=rep(roadmap_stack$mid_y[index_plof_obs],2),y1=c(4500,19000),col=roadmap_stack$col[index_plof_obs]) # the y1 values have to be fitted to the panel e mar() values
 par(xpd=F)
 
-mtext('d', side=3, cex=2, adj = 0.0, line = 0.3)
+mtext('d', side=3, cex=1.4, adj = 0.0, line = 0.3)
 
-par(mar=c(6,4,3,4))
+par(mar=c(5,2.5,2,1))
 plot(NA, NA, xlim=c(1e3, 1e10), ylim=c(0,1.05), xaxs='i', yaxs='i', axes=F, ann=F, log='x')
 xats_tempdf = expand.grid(1:9,10^(3:10))
 xats = xats_tempdf$Var1 * xats_tempdf$Var2
 xbigs = 10^(3:10)
 xbigs_labs = c('1K','10K','100K','1M','10M','100M','1B','10B')
-axis(side=1, at=xats, labels=NA, lwd=1, lwd.ticks=1, tck=-0.025)
-axis(side=1, at=xbigs, labels=xbigs_labs, lwd=0, lwd.ticks=1, tck=-0.05)
+axis(side=1, at=xats, labels=NA, lwd=1, lwd.ticks=1, tck=-0.025, cex.axis=0.7)
+axis(side=1, at=xbigs, labels=NA, lwd=0, lwd.ticks=1, tck=-0.05, cex.axis=0.7)
+axis(side=1, at=xbigs, labels=xbigs_labs, lwd=0, lwd.ticks=0, cex.axis=0.7, line=-0.75)
 #axis(side=1, at=c(world_consang_population,world_population), labels=NA, lwd=0, lwd.ticks=2, tck=-0.15)
 abline(v=c(world_consang_population,world_population), lwd=0.25)
-segments(x0=2912, y0=0, y1=consang_roadmap$exp2hit_percent[1], lwd=0.25)
-segments(x0=141456, y0=0, y1=outbred_roadmap$exp2hit_percent[1], lwd=0.25)
+segments(x0=gnomad_consang, y0=0, y1=consang_roadmap$exp2hit_percent[1], lwd=0.25)
+segments(x0=gnomad, y0=0, y1=outbred_roadmap$exp2hit_percent[1], lwd=0.25)
 par(xpd=T)
-axis(side=1, line=3, at=c(world_consang_population,world_population), labels=c('world\nconsanguineous\npopulation','world\npopulation\n'), lwd=0, lwd.ticks=0, cex.axis=0.8)
-axis(side=1, line=3, at=c(2912, 141456), labels=c('present\nconsanguineous\nsample size','present\ntotal\nsample size'), lwd=0, lwd.ticks=0, cex.axis=0.8)
+axis(side=1, line=1.3, at=c(gnomad_consang,gnomad,world_consang_population,world_population), labels=NA, lwd=0, lwd.ticks=0.5, tck=-0.05)
+axis(side=1, line=2.5, at=c(gnomad_consang,world_consang_population), labels=c('present\nconsang\nsample\nsize','world\nconsang\npop\n'), lwd=0, lwd.ticks=0, cex.axis=0.7)
+axis(side=1, line=2.5, at=c(gnomad,world_population), labels=c('present\ntotal\nsample\nsize','world\npop\n\n'), lwd=0, lwd.ticks=0, cex.axis=0.7)
 par(xpd=F)
-axis(side=2, at=c(0,5000,nrow(roadmap_genes))/nrow(roadmap_genes), labels=c('0','5,000',formatC(nrow(roadmap_genes),big.mark=',')), las=2)
-mtext(side=2, text='number of genes', line=3.5)
-axis(side=4, at=(0:4)/4, labels=percent((0:4)/4), las=2)
-corners = par("usr") # https://stackoverflow.com/a/42034961/3806692
-par(xpd = T) 
-text(x = corners[2]*10, y = mean(corners[3:4]), labels="proportion of genes", srt = 270)
-par(xpd = F)
-mtext(side=1, line=3, text='sample size')
+#axis(side=2, at=c(0,5000,nrow(roadmap_genes))/nrow(roadmap_genes), labels=c('0','5K',formatC(nrow(roadmap_genes),big.mark=',')), las=2, cex.axis=0.7)
+#mtext(side=2, text='genes', line=2, cex=0.7)
+axis(side=2, at=(0:4)/4, labels=percent((0:4)/4), las=2, cex.axis=0.7)
+#mtext(side=2, line=2, text='proportion of genes' ,cex=0.7)
+# corners = par("usr") # https://stackoverflow.com/a/42034961/3806692
+# par(xpd = T) 
+# text(x = corners[2]*10, y = mean(corners[3:4]), labels="proportion of genes", srt = 270)
+# par(xpd = F)
+mtext(side=1, line=1.5, text='         sample size',cex=0.7)
 
 outbred_col = '#000000'
 consang_col = '#8B5A2B'
@@ -835,12 +854,23 @@ points(consang_roadmap$size, consang_roadmap$exp2hit_percent, type='l', lwd=3, c
 points(consang_roadmap$size, consang_roadmap$inferleth_percent, type='l', lwd=3, col=consang_col, lty=3)
 
 #legend('topleft',lwd=c(3,3,3,3),lty=c(1,3,1,3),col=c(consang_col,consang_col,outbred_col,outbred_col),legend=c('2-hit LoF expected'))
-legend(x=1e3, y=1.05,pch=15,col=c(consang_col,outbred_col),legend=c('consanguineous','outbred'),bty='n')
-legend(x=1e3, y=.93,lwd=c(1,1),lty=c(1,3),col='#777777',legend=c('2-hit LoF expected\nif non-lethal\n','lethality inferrable\nif not observed\n'),bty='n')
+par(xpd=T)
+legend(x=10^3.5, y=1.15, pch=15,col=c(consang_col,outbred_col),legend=c('consanguineous','outbred'),bty='n', cex=0.7)
+legend(x=10^3.5, y=1.35, lwd=c(1,1),lty=c(1,3),col='#777777',legend=c('2-hit LoF expected if non-lethal','lethality inferrable if not observed'),bty='n', cex=0.7)
+par(xpd=F)
 
-mtext('e', side=3, cex=2, adj = 0.0, line = 0.3)
+mtext('e', side=3, cex=1.4, adj = 0.0, line = 0.9)
 
 dev.off() ### -- End Figure 2
+
+
+
+
+
+
+
+
+
 
 # statistic for text:
 # "Even if every human on Earth were sequenced, there are 4,728 genes (25%) for which identification of even one two-hit individual would not be expected in an outbred population model"
@@ -857,8 +887,10 @@ sum(genes$obs_hom_lof > 0) / sum(!is.na(genes$obs_hom_lof))
 nrow(roadmap_genes) - outbred_roadmap$exp2hit_count[nrow(outbred_roadmap)]
 (nrow(roadmap_genes) - outbred_roadmap$exp2hit_count[nrow(outbred_roadmap)])/roadmap_stack$n[nrow(roadmap_stack)]
 
+
+
 ### Begin Figure 3
-png('figures/figure_3.png',width=2400,height=2700,res=300)
+pdf('figures/figure_3.pdf',width=8,height=9)
 
 par(mfrow=c(3,1), mar=c(5,4,3,2))
 
@@ -1236,7 +1268,7 @@ order by 1
 
 
 ### Begin Figure ED2
-png('figures/figure_ed2.png',width=2400,height=3600,res=500)
+pdf('figures/figure_ed2.pdf',width=4.8,height=7.2)
 
 par(mfrow=c(3,1))
 
@@ -1352,7 +1384,7 @@ dev.off()
 
 
 
-png('figures/figure2-layer1.png',width=2400,height=1200,res=300)
+pdf('figures/figure2-layer1.pdf',width=8,height=4)
 
 par(mfrow=c(1,1))
 par(mar=c(4,5,4,3))
@@ -1405,7 +1437,7 @@ par(xpd=F)
 dev.off()
 
 
-png('figures/figure2-layer2.png',width=2400,height=1200,res=300)
+pdf('figures/figure2-layer2.pdf',width=8,height=4)
 
 par(mfrow=c(1,1))
 par(mar=c(4,5,4,3))
