@@ -263,13 +263,19 @@ lof_oe$color = '#777777'
 lof_oe$color[lof_oe$filename=='universe'] = '#000000'
 lof_oe$color[lof_oe$filename %in% c('drug_targets')] = '#2E37FE'
 
+
+
+
+
+
+
 ### Begin Figure 1
-pdf('figures/figure_1.pdf',width=6,height=8)
+cairo_pdf('figures/figure_1.pdf',width=nature_col_width,height=nature_page_height/2)
 layout(matrix(c(1,2,2,2),byrow=T,nrow=4))
 
 # Panel A: histogram
 # note it is a histogram even though it is plotted with polygon() so it looks like a density plot
-par(mar=c(4,5,4,3))
+par(mar=c(2,3,2.1,1))
 color_all = '#000000'
 color_drug = '#2E37FE'
 hist_breaks = c((0:20)*5/100,10) # 0%, 5%, 10%, ... 100% and then 1,000% (~+Inf)
@@ -285,42 +291,47 @@ points(h_all$breaks[1:(length(h_all$breaks)-1)], h_all$proportion, col=color_all
 polygon(c(0,h_drug$breaks), c(0,h_drug$proportion,0), col=alpha(color_drug,.5),border=NA)
 points(h_drug$breaks[1:(length(h_drug$breaks)-1)], h_drug$proportion, col=color_drug, type='l', lwd=5)
 abline(h=0,lwd=2)
-axis(side=1, at=(0:4)/4, labels=c(percent((0:3)/4),'\u2265100%'), lwd=0, lwd.ticks=1)
-axis(side=2, at=(0:4)/20, labels=percent((0:4)/20), lwd=0, lwd.ticks=1, las=2)
+axis(side=1, at=(0:4)/4, labels=NA, lwd=0, lwd.ticks=1, cex.axis=0.7)
+axis(side=1, at=(0:4)/4, labels=c(percent((0:3)/4),'≥100%'), lwd=0, lwd.ticks=0, cex.axis=0.7, line=-0.5)
+axis(side=2, at=(0:4)/20, labels=NA, lwd=0, lwd.ticks=1, las=2, cex.axis=0.7)
+axis(side=2, at=(0:4)/20, labels=percent((0:4)/20), lwd=0, lwd.ticks=0, las=2, cex.axis=0.7, line=-0.5)
 abline(v=c(0,1),lwd=2)
-mtext(side=1, text='pLoF obs/exp ratio', line=2.5, font=1, cex=1)
-mtext(side=2, text='proportion of genes', line=3.0, font=1, cex=1)
+mtext(side=1, text='pLoF obs/exp ratio', line=1.75, font=1, cex=0.7)
+mtext(side=2, text='proportion genes', line=2.0, font=1, cex=0.7)
 segments(x0=c(h_all_mean,h_drug_mean),y0=.10,y1=0,col=c(color_all,color_drug),lwd=2,lty=3)
-text(x=c(h_all_mean,h_drug_mean),y=c(.11,.11),pos=c(4,2),font=2,labels=paste(c('all\ngenes\n','drug\ntargets\n'),'mean =',percent(c(h_all_mean,h_drug_mean))),col=c(color_all,color_drug),cex=1.1)
+par(xpd=T)
+text(x=c(h_all_mean,h_drug_mean),y=c(.11,.11),pos=c(4,2),font=2,labels=paste(c('all\ngenes\n','drug\ntargets\n'),'mean =',percent(c(h_all_mean,h_drug_mean))),col=c(color_all,color_drug),cex=0.77)
+par(xpd=F)
 mtext('a', side=3, cex=2, adj = -0.05, line = 0.5)
 
 # Panel B: Forest plot
-par(mar=c(4,20,3,3))
+par(mar=c(3,15,2,1))
 plot(NA,NA, xlim=c(0,1), ylim=expand.range(range(lof_oe$y),by=.75), axes=FALSE, xlab='', ylab='')
 abline(v=lof_oe$mean[lof_oe$filename=='universe'], lty=3, col='#333333', lwd=2)
 par(xpd=T) # allow 95%CI to extend beyond xlims of [0,1]
 segments(x0=lof_oe$lower95, x1=lof_oe$upper95, y0=lof_oe$y, col=lof_oe$color, lwd=3)
 par(xpd=F)
 points(x=lof_oe$mean, y=lof_oe$y, col=lof_oe$color, pch=19, cex=1.5)
-axis(side=1, at=(0:4)/4, labels=percent((0:4)/4), lwd=0, lwd.ticks=1)
+axis(side=1, at=(0:4)/4, labels=NA, lwd=0, lwd.ticks=1, cex.axis=0.7)
+axis(side=1, at=(0:4)/4, labels=percent((0:4)/4), lwd=0, lwd.ticks=0, line=-0.5, cex.axis=0.7)
 abline(v=c(0,1))
 specials = c('drug targets','all')
-mtext(side=2, at=lof_oe$y[!lof_oe$display %in% specials], text=lof_oe$display[!lof_oe$display %in% specials], las=2, cex = .9)
-mtext(side=2, at=lof_oe$y[lof_oe$display=='drug targets'], text='all drug targets', las=2, cex = .9, font=2)
-mtext(side=2, at=lof_oe$y[lof_oe$display=='all'], text='all genes', las=2, cex = .9, font=2)
-mtext(side=1, text='mean (95%CI) pLoF obs/exp ratio', cex=1, line = 2.5)
+mtext(side=2, at=lof_oe$y[!lof_oe$display %in% specials], text=lof_oe$display[!lof_oe$display %in% specials], las=2, cex = .6)
+mtext(side=2, at=lof_oe$y[lof_oe$display=='drug targets'], text='all drug targets', las=2, cex = .6, font=2)
+mtext(side=2, at=lof_oe$y[lof_oe$display=='all'], text='all genes', las=2, cex = .6, font=2)
+mtext(side=1, text='pLoF obs/exp ratio', cex=0.7, line = 1.7)
 par(xpd=T)
 abline(h=lof_oe$y[lof_oe$filename=='universe']+c(.5,-.5), col='#777777', lwd=.5)
 abline(h=lof_oe$y[lof_oe$filename=='drug_targets']+c(.5,-.5,-3.5), col='#777777', lwd=.5)
 abline(h=lof_oe$y[lof_oe$filename=='drug_mod_sm']+c(-2.5), col='#777777', lwd=.5)
 abline(h=lof_oe$y[lof_oe$filename=='drug_indic_other']+c(-.5), col='#777777', lwd=.5)
 par(xpd=F)
-mtext(side=2, at=-4.5, line=13, text='comparators', cex=0.8, font=2, las=2)
-mtext(side=2, at=-10.0, line=13, text="by effect", cex=0.8, font=2, las=2)
-mtext(side=2, at=-13.0, line=13, text="by modality", cex=0.8, font=2, las=2)
-mtext(side=2, at=-18.5, line=13, text="by indication", cex=0.8, font=2, las=2)
+mtext(side=2, at=-4.5, line=10, text='comparators', cex=0.6, font=2, las=2)
+mtext(side=2, at=-10.0, line=10, text="by effect", cex=0.6, font=2, las=2)
+mtext(side=2, at=-13.0, line=10, text="by modality", cex=0.6, font=2, las=2)
+mtext(side=2, at=-18.5, line=10, text="by indication", cex=0.6, font=2, las=2)
 
-mtext('b', side=3, cex=2, adj = -0.4, line = 0.3)
+mtext('b', side=3, cex=2, adj = -1.4, line = 0.1)
 
 dev.off() ### -- End Figure 1
 
