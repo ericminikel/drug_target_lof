@@ -672,7 +672,7 @@ axis(side=1, at=c(-100,100))
 axis(side=2,at=(0:4)*100,las=2)
 mtext('e', side=3, cex=2, adj = 0.0, line = 0.3)
 
-dev.off() ### -- End Figure ED1
+dev.off() ### -- End Figure ED2
 
 
 
@@ -979,13 +979,23 @@ nrow(roadmap_genes) - outbred_roadmap$exp2hit_count[nrow(outbred_roadmap)]
 
 
 
-### Begin Figure 3
-pdf('figures/figure_3.pdf',width=8,height=9)
 
-par(mfrow=c(3,1), mar=c(5,4,3,2))
+
+
+
+
+
+
+
+
+
+### Begin Figure 3
+pdf('figures/figure_3.pdf',width=nature_col_width,height=nature_page_height/2)
+
+par(mfrow=c(3,1), mar=c(2,3,2,1))
 
 filter_parms = data.frame(disp=c('removed by LOFTEE filter','removed by manual curation','likely true LoF','known or putative GoF'),
-                          color=c('#B2DF8A','#A6CEE3','#9D1309','#FF5333'),
+                          color=c('#A2CF7A','#96BED3','#9D1309','#FF5333'),
                           cat=c('loftee','curated','true','gof'))
 
 # notes from manual curation of variants in these genes:
@@ -996,7 +1006,7 @@ gtf = read.table('data/curation/HTT.distilled.gtf')
 colnames(gtf) = c('tx','chrom','start','stop')
 
 
-intron_plot_length = 50
+intron_plot_length = 100
 can = subset(gtf,tx=='ENST00000355072')
 can$len = can$stop - can$start
 can$xstart = 0
@@ -1062,19 +1072,20 @@ exon_ytop = 0
 plot(NA, NA, xlim=c(0,max(can$xstop)), ylim=c(exon_ybot,max(ac_scale$yval)), yaxs='i', ann=FALSE, axes=FALSE)
 abline(h=mean(c(exon_ybot, exon_ytop)))
 rect(xleft=can$xstart, xright=can$xstop, ybottom=rep(exon_ytop,nrow(can)), ytop=rep(exon_ybot,nrow(can)), col='#000000')
-axis(side=2, at=ac_ticks, labels=NA, tck=-0.01)
-axis(side=2, at=ac_scale$yval, labels=ac_scale$disp, tck=-0.03, lwd=0, lwd.ticks=1, las=2)
-mtext(side=2, line=2.5, text='allele count')
-mtext(side=1, line=0, at=can$xmid[c(1,nrow(can))], text=can$exon_num[c(1,nrow(can))], font=3, cex=0.8)
-mtext(side=1, line=0.5, text='HTT exon structure')
+axis(side=2, at=ac_ticks, labels=NA, tck=-0.025, cex.axis=0.7)
+axis(side=2, at=ac_scale$yval, labels=NA, tck=-0.05, lwd=0, lwd.ticks=1, las=2, cex.axis=0.7)
+axis(side=2, at=ac_scale$yval, labels=ac_scale$disp, lwd=0, lwd.ticks=0, las=2, cex.axis=0.7, line=-0.5)
+mtext(side=2, line=1.25, text='allele count', cex=0.7)
+mtext(side=1, line=0, at=can$xmid[c(1,nrow(can))], text=can$exon_num[c(1,nrow(can))], font=3, cex=0.7)
+mtext(side=1, line=0.5, text='exons', cex=0.7)
 
 segments(x0=lof$xplot, y0=rep(0,nrow(lof)), y1=lof$rel_ac, lwd=3, lend=1, col=lof$color)
 
 par(xpd=T)
-legend(x=max(can$xstop)*.6,y=max(ac_scale$yval)*1.1,text.font=2,legend=filter_parms$disp,col=filter_parms$color,lwd=3,text.col=filter_parms$color,cex=1.5)
+legend(x=max(can$xstop)*.5,y=max(ac_scale$yval)*1.1,text.font=2,legend=filter_parms$disp,col=filter_parms$color,lwd=3,text.col=filter_parms$color,cex=0.7)
 par(xpd=F)
 
-mtext(side=3, line=0, text='HTT', font=3, cex=2)
+mtext(side=3, line=0, text='HTT', font=3, cex=0.85, at=max(can$xstop)*.25)
 
 mtext('a', side=3, cex=2, adj = 0.0, line = 0.3)
 
@@ -1093,7 +1104,7 @@ expressed$all_mean = rowMeans(expressed[,all_means])
 expressed$all_rel = expressed$all_mean / max(expressed$all_mean)
 
 
-intron_plot_length = 20
+intron_plot_length = 40
 can = subset(gtf,tx=='ENST00000344290')
 can$len = can$stop - can$start
 can$xstart = 0
@@ -1160,11 +1171,12 @@ plot(NA, NA, xlim=c(0,max(can$xstop)), ylim=c(exon_ybot,max(ac_scale$yval)), yax
 abline(h=mean(c(exon_ybot, exon_ytop)))
 rect(xleft=can$xstart, xright=can$xstop, ybottom=rep(exon_ytop,nrow(can)), ytop=rep(exon_ybot,nrow(can)), col='#FFFFFF' ,border='#000000')
 rect(xleft=xpr$xplot,xright=xpr$xplot+1,ybottom=exon_ybot,ytop=exon_ytop,col=xpr$color,border=NA)
-axis(side=2, at=ac_ticks, labels=NA, tck=-0.01)
-axis(side=2, at=ac_scale$yval, labels=ac_scale$disp, tck=-0.03, lwd=0, lwd.ticks=1, las=2)
-mtext(side=2, line=2.5, text='allele count')
-mtext(side=1, line=0, at=can$xmid, text=can$exon_num, font=3, cex=0.8)
-mtext(side=1, line=1, text='MAPT exon structure')
+axis(side=2, at=ac_ticks, labels=NA, tck=-0.025, cex.axis=0.7)
+axis(side=2, at=ac_scale$yval, labels=NA, tck=-0.05, lwd=0, lwd.ticks=1, las=2, cex.axis=0.7)
+axis(side=2, at=ac_scale$yval, labels=ac_scale$disp, lwd=0, lwd.ticks=0, las=2, cex.axis=0.7, line=-0.5)
+mtext(side=2, line=1.25, text='allele count', cex=0.7)
+mtext(side=1, line=0, at=can$xmid, text=can$exon_num, font=3, cex=0.7)
+mtext(side=1, line=1, text='exons', cex=0.7)
 
 segments(x0=lof$xplot, y0=rep(0,nrow(lof)), y1=lof$rel_ac, lwd=3, lend=1, col=lof$color)
 
@@ -1177,11 +1189,11 @@ scale_ytop = 2.8
 par(xpd=T)
 rect(xleft=scale_xleft,xright=scale_xright,ybottom=scale_ybot,ytop=scale_ytop)
 rect(xleft=scale_xleft+(0:100)*scale_factor, xright=scale_xleft+(1:101)*scale_factor, ybottom=rep(scale_ybot,101), ytop=rep(scale_ytop,101), border=NA, col=alpha('#000000',0:100/100))
-text(x=(scale_xright + scale_xleft)/2, y=scale_ytop, pos=3, labels='brain expression', cex=1.5)
-text(x=c(scale_xleft,scale_xright),y=c(scale_ybot,scale_ybot),pos=1,labels=c('0%','100%'),cex=1.3,font=3)
+text(x=(scale_xright + scale_xleft)/2, y=scale_ytop, pos=3, labels='brain expression', cex=0.85)
+text(x=c(scale_xleft,scale_xright),y=c(scale_ybot,scale_ybot),pos=1,labels=c('0%','100%'),cex=0.7,font=3)
 par(xpd=F)
 
-mtext(side=3, line=0, text='MAPT', font=3, cex=2)
+mtext(side=3, line=0, text='MAPT', font=3, cex=.85, at = max(can$xstop)*.25)
 
 mtext('b', side=3, cex=2, adj = 0.0, line = 0.3)
 
@@ -1211,30 +1223,37 @@ exon_ybot = -0.5
 exon_ytop = 0
 
 plot(NA,NA,xlim=c(1,254),ylim=c(exon_ybot,3),axes=FALSE,xlab='',ylab='')
-axis(side=2, at=ac_ticks, labels=NA, tck=-0.01)
-axis(side=2, at=ac_scale$yval, labels=ac_scale$disp, tck=-0.03, lwd=0, lwd.ticks=1, las=2)
-mtext(side=2, line=2.5, text='allele count')
-axis(side=1,at=c(1,(1:4)*50,253),labels=c(1,(1:4)*50,253),lwd=NA,lwd.ticks=1,cex.axis=.8)
+axis(side=2, at=ac_ticks, labels=NA, tck=-0.025, cex.axis=0.7)
+axis(side=2, at=ac_scale$yval, labels=NA, tck=-0.05, lwd=0, lwd.ticks=1, las=2, cex.axis=0.7)
+axis(side=2, at=ac_scale$yval, labels=ac_scale$disp, lwd=0, lwd.ticks=0, las=2, cex.axis=0.7, line=-0.5)
+mtext(side=2, line=1.25, text='allele count', cex=0.7)
+axis(side=1,at=c(1,(1:4)*50,253),labels=NA,lwd=NA,lwd.ticks=1,tck=-0.02,cex.axis=.7,line=-0.1)
+axis(side=1,at=c(1,(1:4)*50,253),labels=c(1,(1:4)*50,253),lwd=NA,lwd.ticks=0,cex.axis=.7,line=-1.15)
 rect(xleft=c(1,23,231),xright=c(23,231,254),ybottom=rep(exon_ybot,3),ytop=rep(exon_ytop,3),col=c(cleaved_color,prp_color,cleaved_color),border=NA)
 
 points(lof$codon,lof$rel_ac,col=lof$color,type='h',lwd=3,lend=1)
-mtext(side=1, line=2.5, text='PRNP codon number')
+mtext(side=1, line=0.65, text='codon number', cex=0.7)
 
 label_y = 2.2
 segments(x0=15,x1=135,y0=label_y,lwd=3,lend=1)
 segments(x0=140,x1=240,y0=label_y,lwd=3,lend=1)
-text(x=(15+135)/2,y=label_y,pos=3,labels='gnomAD non-dementia cohorts',cex=1.5)
-text(x=(140+240)/2,y=label_y,pos=3,labels='prion or other dementia cohorts',cex=1.5)
-mtext(side=1,at=(1+23)/2,line=0.75,text='signal\npeptide',col=cleaved_color,cex=.8,font=2)
-mtext(side=1,at=(231+253)/2,line=0.75,text='GPI\nsignal',col=cleaved_color,cex=.8,font=2)
-
-
-mtext(side=3, line=0, text='PRNP', font=3, cex=2)
-
+text(x=(15+135)/2,y=label_y,pos=3,labels='gnomAD non-dementia cohorts',cex=0.7)
+text(x=(140+240)/2,y=label_y,pos=3,labels='prion or other dementia cohorts',cex=0.7)
+mtext(side=1,at=(1+23)/2,text='signal peptide',col=cleaved_color,cex=.55,font=2,line=0.5)
+mtext(side=1,at=(231+253)/2,text='GPI signal',col=cleaved_color,cex=.55,font=2,line=0.5)
+mtext(side=3, line=0, text='PRNP', font=3, cex=0.85, at=253*.25)
 mtext('c', side=3, cex=2, adj = 0.0, line = 0.3)
 
-
 dev.off()
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1358,7 +1377,7 @@ order by 1
 
 
 ### Begin Figure ED3
-pdf('figures/figure_ed3.pdf',width=4.8,height=7.2)
+pdf('figures/figure_ed3.pdf',width=nature_col_width,height=nature_page_height*0.33)
 
 par(mfrow=c(3,1))
 
@@ -1387,14 +1406,15 @@ hom_k = '#984EA3'
 het_hist = hist(2*genes$p_dsamp_global*(1-genes$p_dsamp_global), breaks=caf_breaks, plot=FALSE)
 hom_hist = hist(genes$p_dsamp_global ^ 2, breaks=caf_breaks, plot=FALSE)
 
-par(mar=c(2,5,4,3))
+par(mar=c(1,3,3,1))
 plot(NA, NA, xlim=c(-13,0), ylim=c(0,ymax), ann=FALSE, axes=FALSE, xaxs='i', yaxs='i')
-axis(side=1, at=c(-13,-9,-6,-3,0), labels=c('','1 in 1 billion','1 in 1 million','1 in 1,000','100%'), tck=-0.03, lwd=1, lwd.ticks=1)
-axis(side=1, at=c(-12.3), labels=c('zero'), lwd=0, lwd.ticks=0)
-axis(side=1, at=-12:0, labels=NA, lwd=0, lwd.ticks=1, tck=-0.01)
-axis.break(axis=1,breakpos=log10(axis_break),style='zigzag')
-axis(side=2, at=(0:(ymax/1000))*1000, labels=formatC((0:(ymax/1000))*1000,format='d',big.mark=','),las=2)
-mtext(side=2, line=3.5, text='number of genes')
+axis(side=1, at=c(-13,-9,-6,-3,0), labels=NA, tck=-0.2, lwd=1, lwd.ticks=1, cex.axis=0.7, line=0)
+#axis(side=1, at=c(-13,-9,-6,-3,0), labels=c('','1 in 1 billion','1 in 1 million','1 in 1,000','100%'), lwd=0, lwd.ticks=0, cex.axis=0.7, line=-0.5)
+#axis(side=1, at=c(-12.3), labels=c('zero'), lwd=0, lwd.ticks=0, cex.axis=0.7, line=-0.5)
+axis(side=1, at=-12:0, labels=NA, lwd=0, lwd.ticks=1, tck=-0.1)
+axis.break(axis=1,breakpos=log10(axis_break),style='slash',brw = 0.05)
+axis(side=2, at=(0:13)*1000, labels=c('0',paste0(1:13,'K')),las=2, cex.axis=0.7, line=0)
+mtext(side=2, line=2.0, text='genes', cex=0.7)
 rect(xleft=log10(het_hist$mids[1])-.25, xright=log10(het_hist$mids[1])+.25, ybottom=0, ytop=het_hist$counts[1], lwd=3, border=het_k, col=alpha(het_k,.2))
 points(log10(het_hist$mids[2:n_bins]), het_hist$counts[2:n_bins], type='l', lwd=3, col=het_k)
 polygon(x=c(log10(het_hist$mids[2:n_bins]),1), y=c(het_hist$counts[2:n_bins],0), border=NA, col=alpha(het_k,.2))
@@ -1403,10 +1423,10 @@ points(log10(hom_hist$mids[2:n_bins]), hom_hist$counts[2:n_bins], type='l', lwd=
 polygon(x=c(log10(hom_hist$mids[2:n_bins]),1), y=c(hom_hist$counts[2:n_bins],0), border=NA, col=alpha(hom_k,.2))
 segments(x0=log10(1/world_population),y0=0,y1=label_y,lwd=0.5)
 segments(x0=log10(1/gnomad),y0=0,y1=label_y,lwd=0.5)
-text(x=log10(1/world_population),y=label_y,pos=3,labels='1\non\nEarth')
-text(x=log10(1/gnomad),y=label_y,pos=3,labels='1\nin\ngnomAD')
+text(x=log10(1/world_population),y=label_y,pos=3,labels='1 on\nEarth', cex=0.7)
+text(x=log10(1/gnomad),y=label_y,pos=3,labels='1 in\ngnomAD', cex=0.7)
 par(xpd=T)
-legend(x=-4,y=10000,legend=c('heterozygotes','homozygotes &\ncompound hets'),text.col=c(het_k,hom_k),border=c(het_k,hom_k),fill=alpha(c(het_k,hom_k),.2),bty='n',cex=1.2)
+legend(x=-4,y=13000,legend=c('heterozygotes','homozygotes &\ncompound hets'),text.col=c(het_k,hom_k),border=c(het_k,hom_k),fill=alpha(c(het_k,hom_k),.2),bty='n',cex=0.7)
 par(xpd=F)
 mtext('a', side=3, cex=2, adj = 0.0, line = 0.3)
 
@@ -1416,15 +1436,16 @@ gnomad_finns = 12526
 het_hist = hist(2*genes$p_dsamp_finn*(1-genes$p_dsamp_finn), breaks=caf_breaks, plot=FALSE)
 hom_hist = hist(genes$p_dsamp_finn ^ 2, breaks=caf_breaks, plot=FALSE)
 
-par(mar=c(3,5,3,3))
+par(mar=c(2,3,2,1))
 
 plot(NA, NA, xlim=c(-13,0), ylim=c(0,ymax), ann=FALSE, axes=FALSE, xaxs='i', yaxs='i')
-axis(side=1, at=c(-13,-9,-6,-3,0), labels=c('','1 in 1 billion','1 in 1 million','1 in 1,000','100%'), tck=-0.03, lwd=1, lwd.ticks=1)
-axis(side=1, at=c(-12.3), labels=c('zero'), lwd=0, lwd.ticks=0)
-axis(side=1, at=-12:0, labels=NA, lwd=0, lwd.ticks=1, tck=-0.01)
-axis.break(axis=1,breakpos=log10(axis_break),style='zigzag')
-axis(side=2, at=(0:(ymax/1000))*1000, labels=formatC((0:(ymax/1000))*1000,format='d',big.mark=','),las=2)
-mtext(side=2, line=3.5, text='number of genes')
+axis(side=1, at=c(-13,-9,-6,-3,0), labels=NA, tck=-0.2, lwd=1, lwd.ticks=1, cex.axis=0.7, line=0)
+#axis(side=1, at=c(-13,-9,-6,-3,0), labels=c('','1 in 1 billion','1 in 1 million','1 in 1,000','100%'), lwd=0, lwd.ticks=0, cex.axis=0.7, line=-0.5)
+#axis(side=1, at=c(-12.3), labels=c('zero'), lwd=0, lwd.ticks=0, cex.axis=0.7, line=-0.5)
+axis(side=1, at=-12:0, labels=NA, lwd=0, lwd.ticks=1, tck=-0.1)
+axis.break(axis=1,breakpos=log10(axis_break),style='slash',brw = 0.05)
+axis(side=2, at=(0:13)*1000, labels=c('0',paste0(1:13,'K')),las=2, cex.axis=0.7, line=0)
+mtext(side=2, line=2.0, text='genes', cex=0.7)
 rect(xleft=log10(het_hist$mids[1])-.25, xright=log10(het_hist$mids[1])+.25, ybottom=0, ytop=min(het_hist$counts[1],ymax), lwd=3, border=het_k, col=alpha(het_k,.2))
 points(log10(het_hist$mids[2:n_bins]), het_hist$counts[2:n_bins], type='l', lwd=3, col=het_k)
 polygon(x=c(log10(het_hist$mids[2:n_bins]),1), y=c(het_hist$counts[2:n_bins],0), border=NA, col=alpha(het_k,.2))
@@ -1433,8 +1454,8 @@ points(log10(hom_hist$mids[2:n_bins]), hom_hist$counts[2:n_bins], type='l', lwd=
 polygon(x=c(log10(hom_hist$mids[2:n_bins]),1), y=c(hom_hist$counts[2:n_bins],0), border=NA, col=alpha(hom_k,.2))
 segments(x0=log10(1/finland_population),y0=0,y1=label_y,lwd=0.5)
 segments(x0=log10(1/gnomad_finns),y0=0,y1=label_y,lwd=0.5)
-text(x=log10(1/finland_population),y=label_y,pos=3,labels='1\nin\nFinland')
-text(x=log10(1/gnomad_finns),y=label_y,pos=3,labels='1\nin\ngnomAD Finns')
+text(x=log10(1/finland_population),y=label_y,pos=3,labels='1 in\nFinland',cex=0.7)
+text(x=log10(1/gnomad_finns),y=label_y,pos=3,labels='1 in\ngnomAD Finns', cex=0.7)
 
 mtext('b', side=3, cex=2, adj = 0.0, line = 0.3)
 
@@ -1446,16 +1467,16 @@ hom_hist = hist((1-a)*(genes$p_dsamp_global ^ 2) + a*genes$p_dsamp_global, break
 world_consang_population = world_population * .104 # Bittles & Black 2009 PNAS
 gnomad_consang = 2912 # SAS w/ F > 0.05 according to Konrad on 2018-12-04 via Slack
 
-par(mar=c(4,5,2,3))
+par(mar=c(3,3,1,1))
 
 plot(NA, NA, xlim=c(-13,0), ylim=c(0,ymax), ann=FALSE, axes=FALSE, xaxs='i', yaxs='i')
-axis(side=1, at=c(-13,-9,-6,-3,0), labels=c('','1 in 1 billion','1 in 1 million','1 in 1,000','100%'), tck=-0.03, lwd=1, lwd.ticks=1)
-axis(side=1, at=c(-12.3), labels=c('zero'), lwd=0, lwd.ticks=0)
-axis(side=1, at=-12:0, labels=NA, lwd=0, lwd.ticks=1, tck=-0.01)
-axis.break(axis=1,breakpos=log10(axis_break),style='zigzag')
-mtext(side=1, line=2.5, text='expected frequency of pLoF individuals in population')
-axis(side=2, at=(0:(ymax/1000))*1000, labels=formatC((0:(ymax/1000))*1000,format='d',big.mark=','),las=2)
-mtext(side=2, line=3.5, text='number of genes')
+axis(side=1, at=c(-13,-9,-6,-3,0), labels=NA, tck=-0.2, lwd=1, lwd.ticks=1, cex.axis=0.7, line=0)
+axis(side=1, at=c(-13,-9,-6,-3,0), labels=c('','1 in 1 billion','1 in 1 million','1 in 1,000','100%'), lwd=0, lwd.ticks=0, cex.axis=0.7, line=-0.25)
+axis(side=1, at=c(-12.3), labels=c('zero'), lwd=0, lwd.ticks=0, cex.axis=0.7, line=-0.5)
+axis(side=1, at=-12:0, labels=NA, lwd=0, lwd.ticks=1, tck=-0.1)
+axis.break(axis=1,breakpos=log10(axis_break),style='slash',brw = 0.05)
+axis(side=2, at=(0:13)*1000, labels=c('0',paste0(1:13,'K')),las=2, cex.axis=0.7, line=0)
+mtext(side=2, line=2.0, text='genes', cex=0.7)
 rect(xleft=log10(het_hist$mids[1])-.25, xright=log10(het_hist$mids[1])+.25, ybottom=0, ytop=het_hist$counts[1], lwd=3, border=het_k, col=alpha(het_k,.2))
 points(log10(het_hist$mids[2:n_bins]), het_hist$counts[2:n_bins], type='l', lwd=3, col=het_k)
 polygon(x=c(log10(het_hist$mids[2:n_bins]),1), y=c(het_hist$counts[2:n_bins],0), border=NA, col=alpha(het_k,.2))
@@ -1464,8 +1485,8 @@ points(log10(hom_hist$mids[2:n_bins]), hom_hist$counts[2:n_bins], type='l', lwd=
 polygon(x=c(log10(hom_hist$mids[2:n_bins]),1), y=c(hom_hist$counts[2:n_bins],0), border=NA, col=alpha(hom_k,.2))
 segments(x0=log10(1/world_consang_population),y0=0,y1=label_y,lwd=0.5)
 segments(x0=log10(1/gnomad_consang),y0=0,y1=label_y,lwd=0.5)
-text(x=log10(1/world_consang_population),y=label_y,pos=3,labels='1\nconsanguineous\nworldwide')
-text(x=log10(1/gnomad_consang),y=label_y,pos=3,labels='1\nconsanguineous\nin gnomAD')
+text(x=log10(1/world_consang_population),y=label_y,pos=3,labels='1 consanguineous\nworldwide',cex=0.7)
+text(x=log10(1/gnomad_consang),y=label_y,pos=3,labels='1 consanguineous\nin gnomAD', cex=0.7)
 
 mtext('c', side=3, cex=2, adj = 0.0, line = 0.3)
 
