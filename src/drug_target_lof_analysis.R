@@ -271,7 +271,7 @@ lof_oe$color[lof_oe$filename %in% c('drug_targets')] = '#2E37FE'
 
 
 ### Begin Figure 1
-cairo_pdf('figures/figure_1.pdf',width=nature_col_width,height=nature_page_height/2)
+pdf('figures/figure_1.pdf',width=nature_col_width,height=nature_page_height/2)
 layout(matrix(c(1,2,2,3,3),byrow=T,nrow=5))
 
 # Panel A: histogram
@@ -293,7 +293,7 @@ polygon(c(0,h_drug$breaks), c(0,h_drug$proportion,0), col=alpha(color_drug,.5),b
 points(h_drug$breaks[1:(length(h_drug$breaks)-1)], h_drug$proportion, col=color_drug, type='l', lwd=5)
 abline(h=0,lwd=2)
 axis(side=1, at=(0:4)/4, labels=NA, lwd=0, lwd.ticks=1, cex.axis=0.7)
-axis(side=1, at=(0:4)/4, labels=c(percent((0:3)/4),'≥100%'), lwd=0, lwd.ticks=0, cex.axis=0.7, line=-0.5)
+axis(side=1, at=(0:4)/4, labels=c(percent((0:3)/4),'100%+'), lwd=0, lwd.ticks=0, cex.axis=0.7, line=-0.5)
 axis(side=2, at=(0:4)/20, labels=NA, lwd=0, lwd.ticks=1, las=2, cex.axis=0.7)
 axis(side=2, at=(0:4)/20, labels=percent((0:4)/20), lwd=0, lwd.ticks=0, las=2, cex.axis=0.7, line=-0.5)
 abline(v=c(0,1),lwd=2)
@@ -350,17 +350,25 @@ tbl$drug_class = c('topoisomerase I inhibitors',
                    'H1 antihistamines',
                    'angiotensin converting enzyme inhibitors',
                    'cholesterol-lowering antibodies')
-tbl$text_y = seq(0,1,by=1/(nrow(tbl)-1))
-par(mar=c(2,3,1,4))
-plot(NA,NA, xlim=c(0,1), ylim=c(0,1), axes=FALSE, ann=F)
-axis(side=2, at=(0:4)/4, labels=NA, lwd=1, lwd.ticks=1, cex.axis=0.7, tck=-0.05)
+tbl$text_y = c(seq(-0.5, 0.07, by=.57/4), seq(0.25,1.1,by=0.85/6))
+# tbl$text_y = seq(-0.4,1.1,by=1.5/(nrow(tbl)-1)) - 0.07
+par(mar=c(0.5,3,1,4))
+plot(NA,NA, xlim=c(0,1), ylim=c(-0.525,1.125), axes=FALSE, ann=F)
+axis(side=2, at=(0:4)/4, labels=NA, lwd=1, lwd.ticks=1, cex.axis=0.7, tck=-0.035)
 axis(side=2, at=(0:4)/4, labels=percent((0:4)/4), lwd=0, lwd.ticks=0, line=-0.5, cex.axis=0.7, las=2)
-mtext(side=2, text='pLoF obs/exp ratio', line=2, font=1, cex=0.7)
+mtext(side=2, text='pLoF obs/exp ratio', line=2, font=1, cex=0.7, at = 0.5)
 abline(h=lof_oe$mean[lof_oe$filename=='clingen_level3_genes_2018_09_13'], lwd=0.75, lty=2, col='red')
-mtext(side=4, at=lof_oe$mean[lof_oe$filename=='clingen_level3_genes_2018_09_13'], text='haplo-\ninsufficient\ngene mean', cex=0.6, las=2, col='red')
+mtext(side=4, at=lof_oe$mean[lof_oe$filename=='clingen_level3_genes_2018_09_13'], text='haplo-\ninsufficient\ngene mean', cex=0.6, las=2, col='red', line=0.25)
 points(x=rep(0.005, nrow(tbl)), y=tbl$oe_lof, pch=20)
 segments(x0=rep(0.01, nrow(tbl)), x1=rep(0.2, nrow(tbl)), y0=tbl$oe_lof, y1=tbl$text_y, lwd=0.5)
-text(x=rep(0.2, nrow(tbl)), y=tbl$text_y, pos=4, label=paste0(tbl$gene, ' - ', tbl$drug_class), cex=0.8)
+# this does not work - for some reason bquote does not vectorize, it just repeats the first element:
+# text(x=rep(0.2, nrow(tbl)), y=tbl$text_y, pos=4, label=bquote(italic(.(tbl$gene)) ~ ' | ' ~ .(tbl$drug_class)), cex=0.8)
+# this works but no italics:
+# text(x=rep(0.2, nrow(tbl)), y=tbl$text_y, pos=4, label=paste0(tbl$gene, ' | ', tbl$drug_class), cex=0.8)
+# this works (only with pdf, not cairo_pdf) even though it is annoying to have to write a loop:
+for (i in 1:nrow(tbl)) {
+  text(x=0.2, y=tbl$text_y[i], pos=4, label=bquote(italic(.(tbl$gene[i])) ~ ' - ' ~ .(tbl$drug_class[i])), cex=0.8)
+}
 mtext('c', side=3, cex=1.4, adj = -0.05, line = 0.1)
 
 dev.off() ### -- End Figure 1
