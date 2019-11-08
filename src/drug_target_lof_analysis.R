@@ -272,7 +272,7 @@ lof_oe$color[lof_oe$filename %in% c('drug_targets')] = '#2E37FE'
 
 ### Begin Figure 1
 cairo_pdf('figures/figure_1.pdf',width=nature_col_width,height=nature_page_height/2)
-layout(matrix(c(1,2,2,2),byrow=T,nrow=4))
+layout(matrix(c(1,2,2,3,3),byrow=T,nrow=5))
 
 # Panel A: histogram
 # note it is a histogram even though it is plotted with polygon() so it looks like a density plot
@@ -303,38 +303,108 @@ segments(x0=c(h_all_mean,h_drug_mean),y0=.10,y1=0,col=c(color_all,color_drug),lw
 par(xpd=T)
 text(x=c(h_all_mean,h_drug_mean),y=c(.11,.11),pos=c(4,2),font=2,labels=paste(c('all\ngenes\n','drug\ntargets\n'),'mean =',percent(c(h_all_mean,h_drug_mean))),col=c(color_all,color_drug),cex=0.77)
 par(xpd=F)
-mtext('a', side=3, cex=2, adj = -0.05, line = 0.5)
+mtext('a', side=3, cex=1.4, adj = -0.05, line = 0.5)
 
 # Panel B: Forest plot
+lof_oe_1 = lof_oe[1:11,]
 par(mar=c(3,15,2,1))
-plot(NA,NA, xlim=c(0,1), ylim=expand.range(range(lof_oe$y),by=.75), axes=FALSE, xlab='', ylab='')
-abline(v=lof_oe$mean[lof_oe$filename=='universe'], lty=3, col='#333333', lwd=2)
+plot(NA,NA, xlim=c(0,1), ylim=expand.range(range(lof_oe_1$y),by=.75), axes=FALSE, xlab='', ylab='')
+abline(v=lof_oe_1$mean[lof_oe_1$filename=='universe'], lty=3, col='#333333', lwd=2)
 par(xpd=T) # allow 95%CI to extend beyond xlims of [0,1]
-segments(x0=lof_oe$lower95, x1=lof_oe$upper95, y0=lof_oe$y, col=lof_oe$color, lwd=3)
+segments(x0=lof_oe_1$lower95, x1=lof_oe_1$upper95, y0=lof_oe_1$y, col=lof_oe_1$color, lwd=3)
 par(xpd=F)
-points(x=lof_oe$mean, y=lof_oe$y, col=lof_oe$color, pch=19, cex=1.5)
+points(x=lof_oe_1$mean, y=lof_oe_1$y, col=lof_oe_1$color, pch=19, cex=1.5)
 axis(side=1, at=(0:4)/4, labels=NA, lwd=0, lwd.ticks=1, cex.axis=0.7)
 axis(side=1, at=(0:4)/4, labels=percent((0:4)/4), lwd=0, lwd.ticks=0, line=-0.5, cex.axis=0.7)
 abline(v=c(0,1))
 specials = c('drug targets','all')
-mtext(side=2, at=lof_oe$y[!lof_oe$display %in% specials], text=lof_oe$display[!lof_oe$display %in% specials], las=2, cex = .6)
-mtext(side=2, at=lof_oe$y[lof_oe$display=='drug targets'], text='all drug targets', las=2, cex = .6, font=2)
-mtext(side=2, at=lof_oe$y[lof_oe$display=='all'], text='all genes', las=2, cex = .6, font=2)
+mtext(side=2, at=lof_oe_1$y[!lof_oe_1$display %in% specials], text=lof_oe_1$display[!lof_oe_1$display %in% specials], las=2, cex = .6)
+mtext(side=2, at=lof_oe_1$y[lof_oe_1$display=='drug targets'], text='all drug targets', las=2, cex = .6, font=2)
+mtext(side=2, at=lof_oe_1$y[lof_oe_1$display=='all'], text='all genes', las=2, cex = .6, font=2)
 mtext(side=1, text='pLoF obs/exp ratio', cex=0.7, line = 1.7)
 par(xpd=T)
-abline(h=lof_oe$y[lof_oe$filename=='universe']+c(.5,-.5), col='#777777', lwd=.5)
-abline(h=lof_oe$y[lof_oe$filename=='drug_targets']+c(.5,-.5,-3.5), col='#777777', lwd=.5)
-abline(h=lof_oe$y[lof_oe$filename=='drug_mod_sm']+c(-2.5), col='#777777', lwd=.5)
-abline(h=lof_oe$y[lof_oe$filename=='drug_indic_other']+c(-.5), col='#777777', lwd=.5)
+abline(h=lof_oe_1$y[lof_oe_1$filename=='universe']+c(.5,-.5), col='#777777', lwd=.5)
+abline(h=lof_oe_1$y[lof_oe_1$filename=='drug_targets']+c(.5,-.5,-3.5), col='#777777', lwd=.5)
+abline(h=lof_oe_1$y[lof_oe_1$filename=='drug_mod_sm']+c(-2.5), col='#777777', lwd=.5)
+abline(h=lof_oe_1$y[lof_oe_1$filename=='drug_indic_other']+c(-.5), col='#777777', lwd=.5)
 par(xpd=F)
 mtext(side=2, at=-4.5, line=10, text='comparators', cex=0.6, font=2, las=2)
 mtext(side=2, at=-10.0, line=10, text="by effect", cex=0.6, font=2, las=2)
-mtext(side=2, at=-13.0, line=10, text="by modality", cex=0.6, font=2, las=2)
-mtext(side=2, at=-18.5, line=10, text="by indication", cex=0.6, font=2, las=2)
 
-mtext('b', side=3, cex=2, adj = -1.4, line = 0.1)
+mtext('b', side=3, cex=1.4, adj = -1.4, line = 0.1)
+
+### Panel C: figure version of what was once Table 1
+target_examples = c('TOP1','CHRM1','TUBB','PTGS2','HMGCR','PDE5A','DHFR','ATP4A','P2RY12','HRH1','ACE','PCSK9')
+temp = gstraint[,c('gene', 'oe_lof')]
+rownames(temp) = temp$gene
+tbl = temp[target_examples,]
+tbl$drug_class = c('topoisomerase I inhibitors',
+                   'M1-selective antimuscarinics',
+                   'cytoskeleton disruptors',
+                   'non-steroidal anti-inflammatory drugs',
+                   'statins',
+                   'phosphodiesterase 5 inhibitors',
+                   'antifolates',
+                   'proton pump inhibitors',
+                   'antiplatelets',
+                   'H1 antihistamines',
+                   'angiotensin converting enzyme inhibitors',
+                   'cholesterol-lowering antibodies')
+tbl$text_y = seq(0,1,by=1/(nrow(tbl)-1))
+par(mar=c(2,3,1,4))
+plot(NA,NA, xlim=c(0,1), ylim=c(0,1), axes=FALSE, ann=F)
+axis(side=2, at=(0:4)/4, labels=NA, lwd=1, lwd.ticks=1, cex.axis=0.7, tck=-0.05)
+axis(side=2, at=(0:4)/4, labels=percent((0:4)/4), lwd=0, lwd.ticks=0, line=-0.5, cex.axis=0.7, las=2)
+mtext(side=2, text='pLoF obs/exp ratio', line=2, font=1, cex=0.7)
+abline(h=lof_oe$mean[lof_oe$filename=='clingen_level3_genes_2018_09_13'], lwd=0.75, lty=2, col='red')
+mtext(side=4, at=lof_oe$mean[lof_oe$filename=='clingen_level3_genes_2018_09_13'], text='haplo-\ninsufficient\ngene mean', cex=0.6, las=2, col='red')
+points(x=rep(0.005, nrow(tbl)), y=tbl$oe_lof, pch=20)
+segments(x0=rep(0.01, nrow(tbl)), x1=rep(0.2, nrow(tbl)), y0=tbl$oe_lof, y1=tbl$text_y, lwd=0.5)
+text(x=rep(0.2, nrow(tbl)), y=tbl$text_y, pos=4, label=paste0(tbl$gene, ' - ', tbl$drug_class), cex=0.8)
+mtext('c', side=3, cex=1.4, adj = -0.05, line = 0.1)
 
 dev.off() ### -- End Figure 1
+
+
+
+
+
+### Begin Figure ED1
+cairo_pdf('figures/figure_ed1.pdf',width=nature_col_width,height=nature_page_height/3)
+
+lof_oe_ed1 = lof_oe[c(-2:-7,-9:-11),]
+lof_oe_ed1$y = -1:-nrow(lof_oe_ed1)
+
+# continuation of forest plot from figure 1
+par(mar=c(3,9,0.5,0.5))
+plot(NA,NA, xlim=c(0,1), ylim=expand.range(range(lof_oe_ed1$y),by=.25), axes=FALSE, xlab='', ylab='')
+abline(v=lof_oe_ed1$mean[lof_oe_ed1$filename=='universe'], lty=3, col='#333333', lwd=2)
+abline(v=lof_oe_ed1$mean[lof_oe_ed1$filename=='drug_targets'], lty=3, col=lof_oe_ed1$color[lof_oe_ed1$filename=='drug_targets'], lwd=2)
+par(xpd=T) # allow 95%CI to extend beyond xlims of [0,1]
+segments(x0=lof_oe_ed1$lower95, x1=lof_oe_ed1$upper95, y0=lof_oe_ed1$y, col=lof_oe_ed1$color, lwd=3)
+par(xpd=F)
+points(x=lof_oe_ed1$mean, y=lof_oe_ed1$y, col=lof_oe_ed1$color, pch=19, cex=1.5)
+axis(side=1, at=(0:4)/4, labels=NA, lwd=0, lwd.ticks=1, cex.axis=0.6)
+axis(side=1, at=(0:4)/4, labels=percent((0:4)/4), lwd=0, lwd.ticks=0, line=-0.5, cex.axis=0.6)
+abline(v=c(0,1))
+specials = c('drug targets','all')
+mtext(side=2, at=lof_oe_ed1$y[!lof_oe_ed1$display %in% specials], text=lof_oe_ed1$display[!lof_oe_ed1$display %in% specials], las=2, cex = .6)
+mtext(side=2, at=lof_oe_ed1$y[lof_oe_ed1$display=='drug targets'], text='all drug targets', las=2, cex = .6, font=2, col=lof_oe_ed1$color[lof_oe_ed1$filename=='drug_targets'])
+mtext(side=2, at=lof_oe_ed1$y[lof_oe_ed1$display=='all'], text='all genes', las=2, cex = .6, font=2)
+mtext(side=1, text='pLoF obs/exp ratio', cex=0.7, line = 1.7)
+par(xpd=T)
+abline(h=lof_oe_ed1$y[lof_oe_ed1$filename=='universe']+c(.5,-.5), col='#777777', lwd=.5)
+abline(h=lof_oe_ed1$y[lof_oe_ed1$filename=='drug_targets']+c(.5,-.5,-3.5), col='#777777', lwd=.5)
+abline(h=lof_oe_ed1$y[lof_oe_ed1$filename=='drug_mod_sm']+c(-2.5), col='#777777', lwd=.5)
+abline(h=lof_oe_ed1$y[lof_oe_ed1$filename=='drug_indic_other']+c(-.5), col='#777777', lwd=.5)
+par(xpd=F)
+mtext(side=2, at=-4, line=5.5, text="by modality", cex=0.6, font=2, las=2)
+mtext(side=2, at=-9.5, line=5.5, text="by indication", cex=0.6, font=2, las=2)
+
+dev.off() ### -- End Figure ED1
+
+
+
 
 
 
@@ -466,8 +536,8 @@ for (i in 1:dim(forest2)[1]) {
 
 forest2$y = -1:(-1*dim(forest2)[1])
 
-### Begin Figure ED1
-pdf('figures/figure_ed1.pdf',width=nature_full_width,height=nature_page_height/3)
+### Begin Figure ED2
+pdf('figures/figure_ed2.pdf',width=nature_full_width,height=nature_page_height/3)
 
 layout_matrix = matrix(c(1,1,1,2,2,3,
                          1,1,1,2,2,4,
@@ -1279,8 +1349,8 @@ order by 1
 
 
 
-### Begin Figure ED2
-pdf('figures/figure_ed2.pdf',width=4.8,height=7.2)
+### Begin Figure ED3
+pdf('figures/figure_ed3.pdf',width=4.8,height=7.2)
 
 par(mfrow=c(3,1))
 
