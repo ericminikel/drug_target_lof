@@ -39,6 +39,7 @@ tla_to_ola = function(x) {
 # and 183 mm wide (double column). The full depth of a Nature page is 247 mm.
 mm_per_inch = 25.4
 nature_col_width = 89 / mm_per_inch
+nature_full_width = 183 / mm_per_inch
 nature_page_height = 247 / mm_per_inch
 # scale = 2 # make figures 2x as large in linear dimensions (not doing this for now)
 
@@ -466,14 +467,14 @@ for (i in 1:dim(forest2)[1]) {
 forest2$y = -1:(-1*dim(forest2)[1])
 
 ### Begin Figure ED1
-pdf('figures/figure_ed1.pdf',width=12,height=5.3)
+pdf('figures/figure_ed1.pdf',width=nature_full_width,height=nature_page_height/3)
 
 layout_matrix = matrix(c(1,1,1,2,2,3,
                          1,1,1,2,2,4,
                          1,1,1,2,2,5),nrow=3,byrow=T)
 layout(layout_matrix, heights=c(1,1,1))
 
-par(mar=c(4,20,3,3))
+par(mar=c(4,15,3,1))
 
 ylims = expand.range(range(forest2$y),by=.75)
 
@@ -487,9 +488,9 @@ points(x=forest2$drug_mean[3:nrow(forest2)], y=forest2$y[3:nrow(forest2)], col=e
 
 axis(side=1, at=(0:4)/4, labels=percent((0:4)/4), lwd=0, lwd.ticks=1)
 abline(v=c(0,1))
-mtext(side=2, line=1, at=forest2$y[1:2], text=forest2$display[1:2], las=2, cex = .9, font=2)
-mtext(side=2, line=1, at=forest2$y[3:nrow(forest2)], text=forest2$display[3:nrow(forest2)], las=2, cex = .9)
-mtext(side=1, text='mean (95%CI) pLoF obs/exp ratio', cex=1, line = 2.5)
+mtext(side=2, line=1, at=forest2$y[1:2], text=forest2$display[1:2], las=2, cex = .7, font=2)
+mtext(side=2, line=1, at=forest2$y[3:nrow(forest2)], text=forest2$display[3:nrow(forest2)], las=2, cex = .7)
+mtext(side=1, text='pLoF obs/exp ratio', cex=0.7, line = 2.5)
 par(xpd=T)
 abline(h=forest2$y[forest2$filename=='drug_targets']+c(.5,-.5), col='#777777', lwd=.5)
 abline(h=forest2$y[forest2$filename=='enzymes']+c(-.5), col='#777777', lwd=.5)
@@ -497,9 +498,9 @@ abline(h=forest2$y[forest2$filename=='omim_genes']+c(-.5), col='#777777', lwd=.5
 abline(h=forest2$y[forest2$filename=='none1tpm']+c(-.5), col='#777777', lwd=.5)
 abline(h=forest2$y[forest2$filename=='botquartile_medtpm']+c(-.5), col='#777777', lwd=.5)
 par(xpd=F)
-mtext(side=2, at=-4.5, line=11, text='protein\nfamily', cex=0.8, font=2, las=2)
-mtext(side=2, at=-7.5, line=11, text="human\ndisease\nassociation", cex=0.8, font=2, las=2)
-mtext(side=2, at=-10.0, line=11, text="tissues with\nexpression\n>1 TPM", cex=0.8, font=2, las=2)
+mtext(side=2, at=-4.5, line=9, text='protein\nfamily', cex=0.7, font=2, las=2)
+mtext(side=2, at=-7.5, line=9, text="human\ndisease\nassociation", cex=0.7, font=2, las=2)
+mtext(side=2, at=-10.0, line=9, text="tissues with\nexpression\n>1 TPM", cex=0.7, font=2, las=2)
 
 
 mtext('a', side=3, cex=2, adj = 0.0, line = 0.3)
@@ -510,12 +511,12 @@ par(mar=c(4,2,3,3))
 plot(NA, NA, xlim=c(1/64,64), ylim=ylims, axes=FALSE, ann=FALSE,log='x',xaxs='i',yaxs='i')
 abline(v=1)
 for (i in 3:nrow(genes)) {
-  segments(x0=1,x1=forest2$enrichment[i],y0=forest2$y[i],y1=forest2$y[i],col=forest2$color[i],lend=1,lwd=25)
-  arrows(x0=forest2$enrichment_l95[i],x1=forest2$enrichment_u95[i],y0=forest2$y[i],y1=forest2$y[i],col='black',lwd=1,angle=90,length=0.05,code=3)
+  segments(x0=1,x1=forest2$enrichment[i],y0=forest2$y[i],y1=forest2$y[i],col=forest2$color[i],lend=1,lwd=12)
+  arrows(x0=forest2$enrichment_l95[i],x1=forest2$enrichment_u95[i],y0=forest2$y[i],y1=forest2$y[i],col='black',lwd=1,angle=90,length=0.03,code=3)
 }
 axis(side=1, at=2^(-6:6), labels=NA)
-axis(side=1, at=2^(c(-6,-4,-2,0,2,4,6)), labels=2^(c(6,4,2,0,2,4,6)), lwd=0, lwd.ticks=0)
-axis(side=1,line=1.5,at=c(1/8,8),labels=c('fold depletion','fold enrichment'),lwd=0, lwd.ticks=0, cex.axis=1.5)
+axis(side=1, at=2^(c(-6,-4,-2,0,2,4,6)), labels=2^(c(6,4,2,0,2,4,6)), lwd=0, lwd.ticks=0, cex.axis=0.9)
+axis(side=1,line=1.5,at=c(1/8,8),labels=c('fold depletion','fold enrichment'),lwd=0, lwd.ticks=0, cex.axis=0.9)
 par(xpd=T)
 abline(h=forest2$y[forest2$filename=='drug_targets']+c(-.5), col='#777777', lwd=.5)
 abline(h=forest2$y[forest2$filename=='enzymes']+c(-.5), col='#777777', lwd=.5)
