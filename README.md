@@ -1,6 +1,6 @@
 This repository holds the data and code for the following manuscript:
 
-[Minikel EV, Karczewski KJ, Martin HC, Cummings BB, Whiffin N, Alfoldi J, Trembath RC, van Heel DA, Daly MJ, Schreiber SL, MacArthur DG. Evaluating potential drug targets through human loss-of-function genetic variation. bioRxiv 530881. 2019 Jan 28.](https://doi.org/10.1101/530881)
+[Minikel EV, Karczewski KJ, Martin HC, Cummings BB, Whiffin N, Rhodes D, Alfoldi JA, Trembath RC, van Heel DA, Daly MJ, gnomAD Production Team, gnomAD Consortium, Schreiber SL, MacArthur DG. Evaluating drug targets through human loss-of-function genetic variation. _Nature_ May 28, 2020. DOI: 10.1038/s41586-020-2267-z](https://doi.org/10.1038/s41586-020-2267-z)
 
 The R script [src/drug_target_lof_analysis.R](src/drug_target_lof_analysis.R) will reproduce the figures and statistics from the manuscript.
 
