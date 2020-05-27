@@ -288,9 +288,9 @@ h_all_mean = mean(genes$oe_lof[genes$universe],na.rm=TRUE)
 h_drug_mean = mean(genes$oe_lof[genes$drug_targets],na.rm=TRUE)
 plot(NA, NA, xlim=c(0,1), ylim=c(0,.15), xaxs='i', yaxs='i', axes=FALSE, xlab='', ylab='')
 polygon(c(0,h_all$breaks), c(0,h_all$proportion,0), col=alpha(color_all,.5),border=NA)
-points(h_all$breaks[1:(length(h_all$breaks)-1)], h_all$proportion, col=color_all, type='l', lwd=5)
+points(h_all$breaks[1:(length(h_all$breaks)-1)], h_all$proportion, col=color_all, type='l', lwd=2)
 polygon(c(0,h_drug$breaks), c(0,h_drug$proportion,0), col=alpha(color_drug,.5),border=NA)
-points(h_drug$breaks[1:(length(h_drug$breaks)-1)], h_drug$proportion, col=color_drug, type='l', lwd=5)
+points(h_drug$breaks[1:(length(h_drug$breaks)-1)], h_drug$proportion, col=color_drug, type='l', lwd=2)
 abline(h=0,lwd=2)
 axis(side=1, at=(0:4)/4, labels=NA, lwd=0, lwd.ticks=1, cex.axis=0.7)
 axis(side=1, at=(0:4)/4, labels=c(percent((0:3)/4),'100%+'), lwd=0, lwd.ticks=0, cex.axis=0.7, line=-0.5)
@@ -311,7 +311,7 @@ par(mar=c(3,15,2,1))
 plot(NA,NA, xlim=c(0,1), ylim=expand.range(range(lof_oe_1$y),by=.75), axes=FALSE, xlab='', ylab='')
 abline(v=lof_oe_1$mean[lof_oe_1$filename=='universe'], lty=3, col='#333333', lwd=2)
 par(xpd=T) # allow 95%CI to extend beyond xlims of [0,1]
-segments(x0=lof_oe_1$lower95, x1=lof_oe_1$upper95, y0=lof_oe_1$y, col=lof_oe_1$color, lwd=3)
+segments(x0=lof_oe_1$lower95, x1=lof_oe_1$upper95, y0=lof_oe_1$y, col=lof_oe_1$color, lwd=2)
 par(xpd=F)
 points(x=lof_oe_1$mean, y=lof_oe_1$y, col=lof_oe_1$color, pch=19, cex=1.5)
 axis(side=1, at=(0:4)/4, labels=NA, lwd=0, lwd.ticks=1, cex.axis=0.7)
@@ -358,7 +358,7 @@ axis(side=2, at=(0:4)/4, labels=NA, lwd=1, lwd.ticks=1, cex.axis=0.7, tck=-0.035
 axis(side=2, at=(0:4)/4, labels=percent((0:4)/4), lwd=0, lwd.ticks=0, line=-0.5, cex.axis=0.7, las=2)
 mtext(side=2, text='pLoF obs/exp ratio', line=2, font=1, cex=0.7, at = 0.5)
 abline(h=lof_oe$mean[lof_oe$filename=='clingen_level3_genes_2018_09_13'], lwd=0.75, lty=2, col='red')
-mtext(side=4, at=lof_oe$mean[lof_oe$filename=='clingen_level3_genes_2018_09_13'], text='haplo-\ninsufficient\ngene mean', cex=0.6, las=2, col='red', line=0.25)
+mtext(side=4, at=lof_oe$mean[lof_oe$filename=='clingen_level3_genes_2018_09_13'], text='haplo-\ninsufficient\ngene mean\n', cex=0.6, las=2, col='red', line=0.25)
 points(x=rep(0.005, nrow(tbl)), y=tbl$oe_lof, pch=20)
 segments(x0=rep(0.01, nrow(tbl)), x1=rep(0.2, nrow(tbl)), y0=tbl$oe_lof, y1=tbl$text_y, lwd=0.5)
 # this does not work - for some reason bquote does not vectorize, it just repeats the first element:
@@ -366,9 +366,11 @@ segments(x0=rep(0.01, nrow(tbl)), x1=rep(0.2, nrow(tbl)), y0=tbl$oe_lof, y1=tbl$
 # this works but no italics:
 # text(x=rep(0.2, nrow(tbl)), y=tbl$text_y, pos=4, label=paste0(tbl$gene, ' | ', tbl$drug_class), cex=0.8)
 # this works (only with pdf, not cairo_pdf) even though it is annoying to have to write a loop:
+par(xpd=T)
 for (i in 1:nrow(tbl)) {
-  text(x=0.2, y=tbl$text_y[i], pos=4, label=bquote(italic(.(tbl$gene[i])) ~ ' - ' ~ .(tbl$drug_class[i])), cex=0.8)
+  text(x=0.2, y=tbl$text_y[i], pos=4, label=bquote(italic(.(tbl$gene[i])) ~ ' - ' ~ .(tbl$drug_class[i])), cex=0.85)
 }
+par(xpd=F)
 mtext('c', side=3, cex=1.4, adj = -0.05, line = 0.1)
 
 dev.off() ### -- End Figure 1
@@ -473,6 +475,7 @@ genes$dz_assoc[genes$gwascatalog & genes$omim_genes] = 'both'
 # does controlling for all the Figure ED1 factors account for difference between drug targets & other genes?
 m = lm(oe_lof ~ drug_targets + n1tpm + family + dz_assoc, data=genes)
 summary(m) # no - drug targets still more constrained by a difference of -7.8% obs/exp, P = 0.00012
+summary(m)$coefficients
 
 
 # create forest plot data for Figure ED1
