@@ -109,8 +109,8 @@ def parse_drugbank(drugbank_path,hgnc,debug=False):
     return [drug_gene, drug_gene_action, drug_classifications, drug_categories]
 
 if __name__ == '__main__':
-    hgnc = parse_hgnc("raw_data/gene_with_protein_product_2018_09_13.txt",mode='id')
-    parsed = parse_drugbank("raw_data/drugbank.xml",hgnc,debug=True)
+    hgnc = parse_hgnc("../drug_target_lof_full/raw_data/gene_with_protein_product_2018_09_13.txt",mode='id')
+    parsed = parse_drugbank("../drug_target_lof_full/raw_data/drugbank.xml",hgnc,debug=True)
     drug_gene = parsed[0]
     drug_gene_action = parsed[1]
     drug_classifications = parsed[2]
